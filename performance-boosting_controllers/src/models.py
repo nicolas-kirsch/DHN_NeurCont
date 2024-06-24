@@ -134,64 +134,22 @@ class Controller(nn.Module):
         return u_, xi_, omega_
 
 class DHN(nn.Module):
-    def __init__(self,m,cop):
+    def __init__(self,mass,cop):
         super().__init__()
-        self.m = m
-        self.cp = 4000
+        self.mass = mass
+        self.cp = 4186
         self.cop = cop
         self.n = 1
         self.m = 1
 
     def f(self, x,u,t): 
-        f = x + self.cop/(self.m*self.cp) * u
+        f = x + self.cop/(self.mass*self.cp) * u
         return f
 
     def forward(self, t, x, u, w):
-        x_ = self.f(t, x, u) + w  # here we can add noise not modelled
+        x_ = self.f(x, u,t) - w/(self.cp*self.mass)
+
+         # here we can add noise not modelled
         y = x_
         return x_, y
 
-    
-class SystemRobots(nn.Module):
-    def __init__(self, xbar, linear=True, mass=1.):
-        super().__init__()
-        self.n_agents = int(xbar.shape[0]/4)
-        self.n = 4*self.n_agents
-        self.m = 2*self.n_agents
-        self.h = 0.05
-        self.mass = mass
-        self.k = 1.0
-        self.b = 1.0
-        if linear:
-            self.b2 = 0
-        else:
-            self.b2 = 0.5
-        self.B = torch.kron(torch.eye(self.n_agents),
-                            torch.tensor([[0, 0],
-                                          [0., 0],
-                                          [1/self.mass, 0],
-                                          [0, 1/self.mass]])
-                            ) * self.h
-        self.xbar = xbar
-        # Construct A:
-        A1 = torch.eye(4*self.n_agents)
-        A2 = torch.cat((torch.cat((torch.zeros(2,2),
-                                   torch.eye(2)
-                                   ), dim=1),
-                        torch.cat((torch.diag(torch.tensor([-self.k/self.mass, -self.k/self.mass])),
-                                   torch.diag(torch.tensor([-self.b/self.mass, -self.b/self.mass]))
-                                   ),dim=1),
-                        ),dim=0)
-        A2 = torch.kron(torch.eye(self.n_agents), A2)
-        self.A = A1 + self.h * A2
-
-    def f(self, t, x, u):
-        mask = torch.cat([torch.zeros(2), torch.ones(2)]).repeat(self.n_agents)
-        f = (F.linear(x - self.xbar, self.A) + self.h * self.b2/self.m * mask * torch.tanh(x - self.xbar)
-             + F.linear(u, self.B) + self.xbar)
-        return f
-
-    def forward(self, t, x, u, w):
-        x_ = self.f(t, x, u) + w  # here we can add noise not modelled
-        y = x_
-        return x_, y

@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+import numpy as np
 
 
 def f_loss_states(t, x, sys, Q=None):
@@ -15,6 +16,18 @@ def f_loss_states(t, x, sys, Q=None):
 def f_loss_u(t, u):
     loss_u = (u ** 2).sum()
     return loss_u
+
+
+def f_loss_bound(x, bound,leq = True):
+
+    if leq:
+        delta = x - bound
+    else: 
+        delta = bound - x
+
+    loss_bound = 10*torch.log10(1+torch.exp((delta)))
+
+    return loss_bound
 
 
 
