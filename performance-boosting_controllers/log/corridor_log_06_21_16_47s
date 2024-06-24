@@ -1,0 +1,56 @@
+2024-06-21 16:47:48,151 
+------------ Begin training ------------
+Problem: corridor -- t_end: 100 -- lr: 1.00e-04 -- epochs: 5000 -- n_traj: 1 -- std_ini: 0.50
+ -- alpha_u: 0.0003 -- alpha_ca: 100 -- alpha_obst: 5.0e+03
+REN info -- n_xi: 8 -- l: 8 use_sp: False
+--------- --------- ---------  ---------
+2024-06-21 16:47:48,227 Epoch:    0 --- Loss:    0.5149 ---||--- Loss x:      0.00 --- Loss u:   51.4858 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:48,517 Epoch:    1 --- Loss:    0.1115 ---||--- Loss x:      0.00 --- Loss u:   11.1546 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:48,590 Epoch:    2 --- Loss:    0.1681 ---||--- Loss x:      0.00 --- Loss u:   16.8118 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:48,837 Epoch:    3 --- Loss:    0.2125 ---||--- Loss x:      0.00 --- Loss u:   21.2547 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:48,913 Epoch:    4 --- Loss:    0.1646 ---||--- Loss x:      0.00 --- Loss u:   16.4561 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,136 Epoch:    5 --- Loss:    0.1103 ---||--- Loss x:      0.00 --- Loss u:   11.0274 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,210 Epoch:    6 --- Loss:    0.0834 ---||--- Loss x:      0.00 --- Loss u:    8.3407 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,435 Epoch:    7 --- Loss:    0.0834 ---||--- Loss x:      0.00 --- Loss u:    8.3363 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,505 Epoch:    8 --- Loss:    0.0957 ---||--- Loss x:      0.00 --- Loss u:    9.5721 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,723 Epoch:    9 --- Loss:    0.1067 ---||--- Loss x:      0.00 --- Loss u:   10.6662 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:49,793 Epoch:   10 --- Loss:    0.1097 ---||--- Loss x:      0.00 --- Loss u:   10.9701 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,038 Epoch:   11 --- Loss:    0.1046 ---||--- Loss x:      0.00 --- Loss u:   10.4613 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,109 Epoch:   12 --- Loss:    0.0943 ---||--- Loss x:      0.00 --- Loss u:    9.4291 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,328 Epoch:   13 --- Loss:    0.0824 ---||--- Loss x:      0.00 --- Loss u:    8.2434 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,397 Epoch:   14 --- Loss:    0.0722 ---||--- Loss x:      0.00 --- Loss u:    7.2177 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,615 Epoch:   15 --- Loss:    0.0654 ---||--- Loss x:      0.00 --- Loss u:    6.5438 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,686 Epoch:   16 --- Loss:    0.0627 ---||--- Loss x:      0.00 --- Loss u:    6.2706 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,904 Epoch:   17 --- Loss:    0.0632 ---||--- Loss x:      0.00 --- Loss u:    6.3168 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:50,975 Epoch:   18 --- Loss:    0.0652 ---||--- Loss x:      0.00 --- Loss u:    6.5167 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,192 Epoch:   19 --- Loss:    0.0669 ---||--- Loss x:      0.00 --- Loss u:    6.6893 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,261 Epoch:   20 --- Loss:    0.0671 ---||--- Loss x:      0.00 --- Loss u:    6.7060 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,334 Epoch:   21 --- Loss:    0.0652 ---||--- Loss x:      0.00 --- Loss u:    6.5243 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,407 Epoch:   22 --- Loss:    0.0618 ---||--- Loss x:      0.00 --- Loss u:    6.1807 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,482 Epoch:   23 --- Loss:    0.0576 ---||--- Loss x:      0.00 --- Loss u:    5.7560 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,556 Epoch:   24 --- Loss:    0.0534 ---||--- Loss x:      0.00 --- Loss u:    5.3362 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,633 Epoch:   25 --- Loss:    0.0498 ---||--- Loss x:      0.00 --- Loss u:    4.9846 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,736 Epoch:   26 --- Loss:    0.0473 ---||--- Loss x:      0.00 --- Loss u:    4.7302 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,810 Epoch:   27 --- Loss:    0.0457 ---||--- Loss x:      0.00 --- Loss u:    4.5695 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,886 Epoch:   28 --- Loss:    0.0448 ---||--- Loss x:      0.00 --- Loss u:    4.4767 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:51,960 Epoch:   29 --- Loss:    0.0442 ---||--- Loss x:      0.00 --- Loss u:    4.4164 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,034 Epoch:   30 --- Loss:    0.0436 ---||--- Loss x:      0.00 --- Loss u:    4.3550 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,108 Epoch:   31 --- Loss:    0.0427 ---||--- Loss x:      0.00 --- Loss u:    4.2685 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,182 Epoch:   32 --- Loss:    0.0415 ---||--- Loss x:      0.00 --- Loss u:    4.1457 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,258 Epoch:   33 --- Loss:    0.0399 ---||--- Loss x:      0.00 --- Loss u:    3.9884 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,334 Epoch:   34 --- Loss:    0.0381 ---||--- Loss x:      0.00 --- Loss u:    3.8077 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,411 Epoch:   35 --- Loss:    0.0362 ---||--- Loss x:      0.00 --- Loss u:    3.6191 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,488 Epoch:   36 --- Loss:    0.0344 ---||--- Loss x:      0.00 --- Loss u:    3.4387 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,564 Epoch:   37 --- Loss:    0.0328 ---||--- Loss x:      0.00 --- Loss u:    3.2781 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,640 Epoch:   38 --- Loss:    0.0314 ---||--- Loss x:      0.00 --- Loss u:    3.1434 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,715 Epoch:   39 --- Loss:    0.0303 ---||--- Loss x:      0.00 --- Loss u:    3.0338 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,791 Epoch:   40 --- Loss:    0.0294 ---||--- Loss x:      0.00 --- Loss u:    2.9435 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,866 Epoch:   41 --- Loss:    0.0286 ---||--- Loss x:      0.00 --- Loss u:    2.8636 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:52,941 Epoch:   42 --- Loss:    0.0279 ---||--- Loss x:      0.00 --- Loss u:    2.7851 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,015 Epoch:   43 --- Loss:    0.0270 ---||--- Loss x:      0.00 --- Loss u:    2.7009 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,090 Epoch:   44 --- Loss:    0.0261 ---||--- Loss x:      0.00 --- Loss u:    2.6075 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,165 Epoch:   45 --- Loss:    0.0251 ---||--- Loss x:      0.00 --- Loss u:    2.5050 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,241 Epoch:   46 --- Loss:    0.0240 ---||--- Loss x:      0.00 --- Loss u:    2.3968 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,315 Epoch:   47 --- Loss:    0.0229 ---||--- Loss x:      0.00 --- Loss u:    2.2876 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,390 Epoch:   48 --- Loss:    0.0218 ---||--- Loss x:      0.00 --- Loss u:    2.1824 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
+2024-06-21 16:47:53,464 Epoch:   49 --- Loss:    0.0208 ---||--- Loss x:      0.00 --- Loss u:    2.0849 --- Loss ca:      0.00 --- Loss obst:      0.00 --- Loss side:      0.00--- Loss barrier:      0.00
