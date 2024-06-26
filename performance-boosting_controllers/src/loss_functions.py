@@ -18,17 +18,33 @@ def f_loss_u(t, u):
     return loss_u
 
 
-def f_loss_bound(x, bound,leq = True):
+def f_lower_bound(x, bound):
+    threshold = 80
+    beta = 1
+ 
+    delta = bound - x
 
-    if leq:
-        delta = x - bound
-    else: 
-        delta = bound - x
+    loss_bound = beta*torch.log(1+torch.exp((delta))).sum()
 
-    loss_bound = 10*torch.log10(1+torch.exp((delta)))
+    if delta >= threshold:
+        loss_bound = beta*delta.sum()
+
 
     return loss_bound
 
+def f_upper_bound(x, bound):
+    threshold = 80
+    beta = 1
+ 
+
+    delta = x -bound
+
+    loss_bound = 10*torch.log10(1+torch.exp((delta))).sum()
+
+    if delta >= threshold:
+        loss_bound = beta*delta.sum()
+
+    return loss_bound
 
 
 def f_loss_ca(x, sys, min_dist=0.5):

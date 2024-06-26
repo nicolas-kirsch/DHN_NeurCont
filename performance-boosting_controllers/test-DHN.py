@@ -7,7 +7,7 @@ from datetime import datetime
 
 from src.models import Controller,DHN
 from src.plots import plot_trajectories, plot_traj_vs_time
-from src.loss_functions import f_loss_states, f_loss_u, f_loss_ca, f_loss_obst, f_loss_side, f_loss_bound
+from src.loss_functions import f_loss_states, f_loss_u, f_loss_ca, f_loss_obst, f_loss_side, f_upper_bound, f_lower_bound
 from src.utils import calculate_collisions, set_params, generate_data
 from src.utils import WrapLogger
 
@@ -28,14 +28,14 @@ min_dist, t_end, n_agents, x0, xbar, linear, learning_rate, epochs, Q, \
 alpha_u, alpha_x, alpha_obst, n_xi, l, n_traj, std_ini = params
 
 
-epochs = 3
+epochs = 500
 n_traj = 1
 std_ini = 0.5
 l,n_xi = 8,8
 
-learning_rate = 1e-4  # *0.5
+learning_rate = 1e-4 # *0.5
 
-alpha_u = 0.1
+alpha_u = 0.5
 # alpha_barrier = 5  # 250
 alpha_x = 1
 std_ini_param = 0.005
@@ -52,24 +52,7 @@ show_plots = False
 
 t_ext = t_end * 4
 
-# # # # # # # # Load data # # # # # # # #
-file_path = os.path.join(BASE_DIR, 'data', sys_model)
-filename = 'data_' + sys_model + '_stdini' + str(std_ini) + '_agents' + str(n_agents)
-filename += '_RS' + str(random_seed) + '.pkl'
-filename = os.path.join(file_path, filename)
-if not os.path.isfile(filename):
-    generate_data(sys_model, t_end*4, n_agents, random_seed, std_ini=std_ini)
-assert os.path.isfile(filename)
-filehandler = open(filename, 'rb')
-data_saved = pickle.load(filehandler)
-filehandler.close()
-assert data_saved['t_end'] >= t_end and data_saved['t_end'] >= t_ext
-train_x0 = data_saved['data_x0'][:n_train, :]
-assert train_x0.shape[0] == n_train
-test_x0 = data_saved['data_x0'][n_train:, :]
-assert test_x0.shape[0] == n_test
-validation_x0 = data_saved['data_x0'][n_train:n_train+n_validation, :]
-assert validation_x0.shape[0] == n_validation
+x_init = 38
 
 # # # # # # # # Set up logger # # # # # # # #
 log_name = sys_model + prefix
@@ -92,12 +75,6 @@ print(ctl.parameters)
 # # # # # # # # Define optimizer and parameters # # # # # # # #
 optimizer = torch.optim.Adam(ctl.parameters(), lr=learning_rate)
 
-# # # # # # # # Figures # # # # # # # #
-fig_path = os.path.join(BASE_DIR, 'figures', 'temp')
-if not os.path.exists(fig_path):
-    os.makedirs(fig_path)
-filename_figure = 'fig_' + log_name
-filename_figure = os.path.join(fig_path, filename_figure)
 
 # # # # # # # # Training # # # # # # # #
 msg = "\n------------ Begin training ------------\n"
@@ -110,103 +87,60 @@ logger.info(msg)
 best_valid_loss = 1e9
 best_params = None
 best_params_sp = None
+loss_log = []
 for epoch in range(epochs):
-    # batch data
-    if n_traj == 1:
-        train_x0_batch = train_x0[epoch % n_train:epoch % n_train + 1, :]
-    else:
-        inds = torch.randperm(n_train)[:n_traj]
-        train_x0_batch = train_x0[inds, :]
+    
     optimizer.zero_grad()
     loss_x_l, loss_u, loss_x_h, loss_obst, loss_side, loss_barrier = 0, 0, 0, 0, 0, 0
-    for kk in range(n_traj):
-        w_in = torch.zeros(t_end, sys.n)
-        for i in range(len(w_in)):
-            w_in[i, :] = 8*10**5
 
-        u = torch.zeros(sys.m)
-        x = torch.zeros(sys.n)
-        x[0] = 50
+    w_in = torch.zeros(t_end, sys.n)
+    for i in range(len(w_in)):
+        w_in[i, :] = 0
+
+    u = torch.zeros(sys.m)
+    x = torch.zeros(sys.n)
+    x[0] = x_init
 
 
-        xi = torch.zeros(ctl.psi_u.n_xi)
-        omega = (x, u)
+    xi = torch.zeros(ctl.psi_u.n_xi)
+    omega = (x, u)
+    x_log = []
+    u_log = []
+    for t in range(t_end):
+        x_prev = x
+        x, _ = sys(t, x, u, w_in[t, :])
 
-        for t in range(t_end):
-            x_prev = x
-            x, _ = sys(t, x, u, w_in[t, :])
-            u, xi, omega = ctl(t, x, xi, omega)
-            loss_u = loss_u + alpha_u * f_loss_u(t, u) / n_traj
-            loss_x_l = loss_x_l + alpha_x * f_loss_bound(x,40,leq = False)
+        u, xi, omega = ctl(t, x, xi, omega)
+        loss_u = loss_u + alpha_u * f_loss_u(t, u) / n_traj
+        loss_x_l = loss_x_l + alpha_x * f_lower_bound(x,40)
 
-            print(loss_x_l)
-            print(x)
-            loss_x_h = loss_x_h + alpha_x * f_loss_bound(x,80)
+        loss_x_h = loss_x_h + alpha_x * f_upper_bound(x,80)
 
-    loss = loss_x_l + loss_x_h
+        x_log.append(x.detach())
+        
+        u_log.append(u.detach())
 
-    print(epoch)
-    print(loss/t_end)
-    print(loss_x_l)
+
+
+    """    print(x_log)
+    print("U")
+    print(u_log)"""
+
+    loss = loss_x_l + loss_x_h + loss_u
+    loss_log.append(loss.detach())
+
 
     msg = "Epoch: {:>4d} --- Loss: {} ---||--- Loss x: {}".format(epoch, loss/t_end, loss_x_l)
-    msg += " --- Loss u: {:>9.4f} --- Loss ca: {:>9.2f} --- Loss obst: {}".format(loss_u,loss_x_l,loss_obst)
+    msg += " --- Loss u: {:>9.4f} --- Loss x_l: {:>9.4f} --- Loss x_h: {}".format(loss_u,loss_x_l,loss_x_h)
     msg += " --- Loss side: {:>9.2f}--- Loss barrier: {:>9.2f}".format(loss_side, loss_barrier)
     loss.backward()
     optimizer.step()
     ctl.psi_u.set_model_param()
-    """
-    # record state dict if best on valid
-    if validation and epoch % validation_period == 0 and epoch > 0:
-        with torch.no_grad():
-            loss_x, loss_u, loss_ca, loss_obst, loss_side, loss_barrier = 0, 0, 0, 0, 0, 0
-            for kk in range(n_validation):
-                w_in = torch.zeros(t_end, sys.n)
-                for i in range(10):
-                    w_in[i, :] = 40+5*i
-
-                u = torch.zeros(sys.m)
-                x = torch.tensor([50])
-                xi = torch.zeros(ctl.psi_u.n_xi)
-                omega = (x, u)
-                for t in range(t_end):
-                    x_prev = x
-                    x, _ = sys(t, x, u, w_in[t, :])
-                    u, xi, omega = ctl(t, x, xi, omega)
-                    loss_u = loss_u + alpha_u * f_loss_u(t, u) / n_validation
-            loss = loss_u + loss_x_l +loss_x_h
-        msg += ' ---||--- Original validation loss: %.2f' % (loss / t_end)
-        # compare with the best valid loss
-        if loss < best_valid_loss:
-            best_valid_loss = loss
-            best_params = ctl.psi_u.state_dict()
-            if use_sp:
-                best_params_sp = ctl.sp.state_dict()
-            msg += ' (best so far)'
-    if (epoch < epoch_print and epoch % 2 == 0) or epoch % validation_period == 0:
-        # Extended time
-        x_log = torch.zeros(t_ext, sys.n)
-        u_log = torch.zeros(t_ext, sys.m)
-        w_in = torch.zeros(t_ext, sys.n)
-        w_in[0, :] = 50
-        u = torch.zeros(sys.m)
-        x = torch.tensor([50])
-        xi = torch.zeros(ctl.psi_u.n_xi)
-        omega = (x, u)
-        for t in range(t_ext):
-            x, _ = sys(t, x, u, w_in[t, :])
-            u, xi, omega = ctl(t, x, xi, omega)
-            x_log[t, :] = x.detach()
-            u_log[t, :] = u.detach()
-        #plot_trajectories(x_log, xbar, sys.n_agents, text="CL at epoch %i" % epoch, T=t_end, obst=False)
-        if show_plots:
-            plt.show()
-        else:
-            plt.savefig(filename_figure + '_during_' + '%i_epoch' % epoch + '.png', format='png')
-            plt.close()
-    """
     logger.info(msg)
-
+"""    for j in x_log:
+        print(j)
+        print(10*torch.log10(1+torch.exp((j-80))).sum())
+"""
 print("WOWWOWO")
 
 # # # # # # # # Print & plot results # # # # # # # #
@@ -215,10 +149,11 @@ u_log = torch.zeros(t_end, sys.m)
 w_in = torch.zeros(t_end, sys.n)
 w_in = torch.zeros(t_end, sys.n)
 for i in range(len(w_in)):
-    w_in[i, :] = 8*10**6
+    w_in[i, :] = 0
+
 
 u = torch.zeros(sys.m)
-x = torch.tensor([50])
+x = torch.tensor([x_init])
 xi = torch.zeros(ctl.psi_u.n_xi)
 omega = (x, u)
 for t in range(t_end):
@@ -239,9 +174,12 @@ plt.figure()
 plt.plot(range(t+1),x_log.numpy())
 plt.title("X")
 
+plt.figure()
+plt.title("Loss")
+plt.plot(range(epochs),loss_log)
 plt.show()
 # Number of collisions
-
+"""
 # Set parameters to the best seen during training
 if validation and best_params is not None:
     ctl.psi_u.load_state_dict(best_params)
@@ -251,7 +189,7 @@ if validation and best_params is not None:
         ctl.sp.eval()
     ctl.psi_u.set_model_param()
 
-"""
+
 # # # # # # # # Save trained model # # # # # # # #
 fname = log_name + '_T' + str(t_end) + '_stdini' + str(std_ini) + '_RS' + str(random_seed)
 fname += '.pt'

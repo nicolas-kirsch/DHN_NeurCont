@@ -88,7 +88,7 @@ class PsiX(nn.Module):
 
     def forward(self, t, omega):
         y, u = omega
-        psi_x = self.f(t, y, u)
+        psi_x = self.f(y, u,t)
         omega_ = 0
         return psi_x, omega_
 
@@ -125,7 +125,9 @@ class Controller(nn.Module):
 
     def forward(self, t, y_, xi, omega):
         psi_x, _ = self.psi_x(t, omega)
+
         w_ = y_ - psi_x
+
         if self.use_sp:
             w_ = w_ + self.sp(t)
         u_, xi_ = self.psi_u(t, w_, xi)
@@ -137,7 +139,7 @@ class DHN(nn.Module):
     def __init__(self,mass,cop):
         super().__init__()
         self.mass = mass
-        self.cp = 4186
+        self.cp = 4186*10**(-6)
         self.cop = cop
         self.n = 1
         self.m = 1
