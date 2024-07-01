@@ -76,7 +76,7 @@ class PsiU(nn.Module):
         E_xi_ = F.linear(xi, self.F) + F.linear(epsilon, self.B1) + F.linear(w, self.B2)  # + self.bxi
         xi_ = F.linear(E_xi_, self.E.inverse())
         u = F.linear(xi, self.C2) + F.linear(epsilon, self.D21) + F.linear(w, self.D22)  # + self.bu
-        return 20*u, xi_
+        return u, xi_
 
 
 class PsiX(nn.Module):
@@ -93,43 +93,22 @@ class PsiX(nn.Module):
         return psi_x, omega_
 
 
-class Input(torch.nn.Module):
-    def __init__(self, m, t_end, active=True):
-        super().__init__()
-        self.t_end = t_end
-        self.m = m
-        if active:
-            std = 0.0
-            self.u = torch.nn.Parameter((torch.randn(t_end, m) * std))
-        else:
-            self.u = torch.zeros(t_end, m)
-
-    def forward(self, t):
-        if t < self.t_end:
-            return self.u[t, :]
-        else:
-            return torch.zeros(self.m)
 
 
 class Controller(nn.Module):
-    def __init__(self, f, n, m, n_xi, l, use_sp=False, t_end_sp=None, std_ini_param=None):
+    def __init__(self, f, n, m, n_xi, l):
         super().__init__()
         self.n = n
         self.m = m
         self.psi_x = PsiX(f)
-        self.psi_u = PsiU(self.n, self.m, n_xi, l, std_ini_param=std_ini_param)
-        self.output_amplification = 20
-        self.use_sp = use_sp
-        if use_sp:  # setpoint that enters additively in the reconstruction of omega
-            self.sp = Input(n, t_end_sp, active=use_sp)
-
+        self.psi_u = PsiU(self.n, self.m, n_xi, l)
+        self.output_amplification = 1
+        
     def forward(self, t, y_, xi, omega):
         psi_x, _ = self.psi_x(t, omega)
 
         w_ = y_ - psi_x
 
-        if self.use_sp:
-            w_ = w_ + self.sp(t)
         u_, xi_ = self.psi_u(t, w_, xi)
         u_ = u_ * self.output_amplification
         omega_ = (y_, u_)

@@ -4,11 +4,12 @@ import os
 import pickle
 import logging
 from datetime import datetime
+import copy
+
 
 from src.models import Controller,DHN
-from src.plots import plot_trajectories, plot_traj_vs_time
 from src.loss_functions import f_activation, f_loss_u, f_upper_bound, f_lower_bound
-from src.utils import set_params, generate_data
+from src.utils import generate_data
 from src.utils import WrapLogger
 
 
@@ -17,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 random_seed = 3
 torch.manual_seed(random_seed)
 
-sys_model = "corridor"
+sys_model = "DHN"
 prefix = ''
 
 with_barrier = False
@@ -26,7 +27,7 @@ with_barrier = False
 
 
 
-epochs = 500
+epochs = 2
 std_ini = 0.5
 l,n_xi = 10,10
 
@@ -67,8 +68,7 @@ logger = WrapLogger(logger)
 
 # # # # # # # # Define models # # # # # # # #
 sys = DHN(mass=200, cop =2)
-ctl = Controller(sys.f, sys.n, sys.m, n_xi, l, use_sp=use_sp, t_end_sp=t_end, std_ini_param=std_ini_param)
-print(ctl.parameters)
+ctl = Controller(sys.f, sys.n, sys.m, n_xi, l)
 
 data = generate_data(t_end,sys.cp,sys.mass)
 
@@ -80,17 +80,14 @@ optimizer = torch.optim.Adam(ctl.parameters(), lr=learning_rate)
 # # # # # # # # Training # # # # # # # #
 msg = "\n------------ Begin training ------------\n"
 msg += "Problem: " + sys_model + " -- t_end: %i" % t_end + " -- lr: %.2e" % learning_rate
-msg += " -- epochs: %i" % epochs + " -- n + "
-msg += " -- alpha_u: %.4f" % alpha_u + " -- alpha_ca: %i" % alpha_x + " -- " 
-msg += "REN info -- n_xi: %i" % n_xi + " -- l: %i " % l + "use_sp: %r\n" % use_sp
+msg += " -- epochs: %i" % epochs 
+msg += " -- alpha_u: %.4f" % alpha_u + " -- alpha_x: %i" % alpha_x + " -- " 
+msg += "REN info -- n_xi: %i" % n_xi + " -- l: %i " % l
 msg += "--------- --------- ---------  ---------"
 
 
 
 logger.info(msg)
-best_valid_loss = 1e9
-best_params = None
-best_params_sp = None
 loss_log = []
 for epoch in range(epochs):
     for i in range(data.size()[0]):
@@ -127,14 +124,11 @@ for epoch in range(epochs):
             u_log.append(u.detach())
 
 
-
-        """    print(x_log)
-        print("U")
-        print(u_log)"""
-
         loss = loss_x_h + loss_x_l + loss_u_min
+        
         if i == 0:
             loss_log.append(loss.detach())
+
 
 
         
@@ -147,23 +141,21 @@ for epoch in range(epochs):
     msg += " --- Loss u: {:>9.4f} --- Loss x_l: {:>9.4f} --- Loss x_h: {}".format(loss_u_min,loss_x_l,loss_x_h)
     msg += " --- Loss u_l: {:>9.4f}--- Loss u_act: {:>9.4f}".format(loss_u_h,loss_u_act)
     logger.info(msg)
-"""    for j in x_log:
-        print(j)
-        print(10*torch.log10(1+torch.exp((j-80))).sum())
-"""
+
 print("WOWWOWO")
+
 
 # # # # # # # # Print & plot results # # # # # # # #
 x_log = torch.zeros(t_end, sys.n)
 u_log = torch.zeros(t_end, sys.m)
 
 
-
-
 u = torch.zeros(sys.m)
 x = torch.zeros(sys.n)
 xi = torch.zeros(ctl.psi_u.n_xi)
 omega = (x, u)
+
+ #### TODO: generate validation data
 for t in range(t_end):
 
     x, _ = sys(t, x, u, w_in[t, :])
@@ -179,57 +171,26 @@ print(u_log)
 
 plt.figure()
 plt.plot(range(t+1),u_log.numpy())
-plt.title("U")
+plt.title("U profile over the horizon")
+plt.xlabel("Time (h)")
+plt.ylabel("Energy consumption (MJ)")
 
 plt.figure()
 plt.plot(range(t+1),x_log.numpy())
-plt.title("X")
+plt.title("X profile over the horizon")
+plt.xlabel("Time (h)")
+plt.ylabel("Temperature (°C)")
 
 plt.figure()
-plt.title("Loss")
+plt.title("Loss evolution over the epochs")
+plt.xlabel("Epochs")
+plt.ylabel("Loss")
 plt.plot(range(epochs),loss_log)
-
-plt.figure()
-plt.title("W")
-plt.plot(range(t),w_in[1:].detach())
 plt.show()
 
 
+"""plt.figure()
+plt.title("W")
+plt.plot(range(t),w_in[1:].detach())
 """
-# Set parameters to the best seen during training
-if validation and best_params is not None:
-    ctl.psi_u.load_state_dict(best_params)
-    ctl.psi_u.eval()
-    if use_sp:
-        ctl.sp.load_state_dict(best_params_sp)
-        ctl.sp.eval()
-    ctl.psi_u.set_model_param()
-
-
-# # # # # # # # Save trained model # # # # # # # #
-fname = log_name + '_T' + str(t_end) + '_stdini' + str(std_ini) + '_RS' + str(random_seed)
-fname += '.pt'
-filename = os.path.join(BASE_DIR, 'trained_models')
-if not os.path.exists(filename):
-    os.makedirs(filename)
-filename = os.path.join(filename, fname)
-save_dict = {'psi_u': ctl.psi_u.state_dict(),
-             'Q': Q,
-             'alpha_u': alpha_u,
-             'alpha_ca': alpha_x,
-             'alpha_obst': alpha_obst,
-             'n_xi': n_xi,
-             'l': l,
-             'n_traj': n_traj,
-             'epochs': epochs,
-             'std_ini_param': std_ini_param,
-             'use_sp': use_sp,
-             'linear': linear
-             }
-if use_sp:
-    save_dict['sp'] = ctl.sp.state_dict()
-torch.save(save_dict, filename)
-logger.info('[INFO] Saved trained model as: %s' % fname)
-"""
-
 
