@@ -139,6 +139,8 @@ class DHN(nn.Module):
     def __init__(self,mass,cop):
         super().__init__()
         self.mass = mass
+
+        #cp in MJ/Ckg
         self.cp = 4186*10**(-6)
         self.cop = cop
         self.n = 1

@@ -7,8 +7,8 @@ from datetime import datetime
 
 from src.models import Controller,DHN
 from src.plots import plot_trajectories, plot_traj_vs_time
-from src.loss_functions import f_loss_states, f_loss_u, f_loss_ca, f_loss_obst, f_loss_side, f_upper_bound, f_lower_bound
-from src.utils import calculate_collisions, set_params, generate_data
+from src.loss_functions import f_activation, f_loss_u, f_upper_bound, f_lower_bound
+from src.utils import set_params, generate_data
 from src.utils import WrapLogger
 
 
@@ -23,19 +23,16 @@ prefix = ''
 with_barrier = False
 
 # # # # # # # # Parameters and hyperparameters # # # # # # # #
-params = set_params(sys_model)
-min_dist, t_end, n_agents, x0, xbar, linear, learning_rate, epochs, Q, \
-alpha_u, alpha_x, alpha_obst, n_xi, l, n_traj, std_ini = params
+
 
 
 epochs = 500
-n_traj = 1
 std_ini = 0.5
-l,n_xi = 8,8
+l,n_xi = 10,10
 
 learning_rate = 1e-4 # *0.5
 
-alpha_u = 0.5
+alpha_u = 0.1
 # alpha_barrier = 5  # 250
 alpha_x = 1
 std_ini_param = 0.005
@@ -49,10 +46,11 @@ validation_period = 50
 n_validation = 100
 
 show_plots = False
-
+t_end = 24
 t_ext = t_end * 4
 
-x_init = 38
+
+
 
 # # # # # # # # Set up logger # # # # # # # #
 log_name = sys_model + prefix
@@ -72,6 +70,9 @@ sys = DHN(mass=200, cop =2)
 ctl = Controller(sys.f, sys.n, sys.m, n_xi, l, use_sp=use_sp, t_end_sp=t_end, std_ini_param=std_ini_param)
 print(ctl.parameters)
 
+data = generate_data(t_end,sys.cp,sys.mass)
+
+
 # # # # # # # # Define optimizer and parameters # # # # # # # #
 optimizer = torch.optim.Adam(ctl.parameters(), lr=learning_rate)
 
@@ -79,63 +80,72 @@ optimizer = torch.optim.Adam(ctl.parameters(), lr=learning_rate)
 # # # # # # # # Training # # # # # # # #
 msg = "\n------------ Begin training ------------\n"
 msg += "Problem: " + sys_model + " -- t_end: %i" % t_end + " -- lr: %.2e" % learning_rate
-msg += " -- epochs: %i" % epochs + " -- n_traj: %i" % n_traj + " -- std_ini: %.2f\n" % std_ini
-msg += " -- alpha_u: %.4f" % alpha_u + " -- alpha_ca: %i" % alpha_x + " -- alpha_obst: %.1e\n" % alpha_obst
+msg += " -- epochs: %i" % epochs + " -- n + "
+msg += " -- alpha_u: %.4f" % alpha_u + " -- alpha_ca: %i" % alpha_x + " -- " 
 msg += "REN info -- n_xi: %i" % n_xi + " -- l: %i " % l + "use_sp: %r\n" % use_sp
 msg += "--------- --------- ---------  ---------"
+
+
+
 logger.info(msg)
 best_valid_loss = 1e9
 best_params = None
 best_params_sp = None
 loss_log = []
 for epoch in range(epochs):
-    
-    optimizer.zero_grad()
-    loss_x_l, loss_u, loss_x_h, loss_obst, loss_side, loss_barrier = 0, 0, 0, 0, 0, 0
+    for i in range(data.size()[0]):
+        w_in = data[i]
 
-    w_in = torch.zeros(t_end, sys.n)
-    for i in range(len(w_in)):
-        w_in[i, :] = 0
-
-    u = torch.zeros(sys.m)
-    x = torch.zeros(sys.n)
-    x[0] = x_init
+        optimizer.zero_grad()
+        loss_x_l, loss_u_min, loss_x_h, loss_u_h,loss_u_l, loss_u_act  = 0, 0, 0, 0,0,0
 
 
-    xi = torch.zeros(ctl.psi_u.n_xi)
-    omega = (x, u)
-    x_log = []
-    u_log = []
-    for t in range(t_end):
-        x_prev = x
-        x, _ = sys(t, x, u, w_in[t, :])
+        u = torch.zeros(sys.m)
+        x = torch.zeros(sys.n)
 
-        u, xi, omega = ctl(t, x, xi, omega)
-        loss_u = loss_u + alpha_u * f_loss_u(t, u) / n_traj
-        loss_x_l = loss_x_l + alpha_x * f_lower_bound(x,40)
 
-        loss_x_h = loss_x_h + alpha_x * f_upper_bound(x,80)
+        xi = torch.zeros(ctl.psi_u.n_xi)
+        omega = (x, u)
+        x_log = []
+        u_log = []
+        for t in range(t_end):
+            x_prev = x
+            x, _ = sys(t, x, u, w_in[t, :])
 
-        x_log.append(x.detach())
+            u, xi, omega = ctl(t, x, xi, omega)
+            loss_u_min = loss_u_min + alpha_u * f_loss_u(t, u)
+            loss_x_l = loss_x_l + alpha_x * f_lower_bound(x,40)
+
+            loss_x_h = loss_x_h + alpha_x * f_upper_bound(x,80)
+            loss_u_h = loss_u_h + f_upper_bound(u,3)
+            loss_u_l = loss_u_l + f_lower_bound(u,0)
+            #loss_u_act = loss_u_act + f_activation(u,1)
+            
+
+            x_log.append(x.detach())
+            
+            u_log.append(u.detach())
+
+
+
+        """    print(x_log)
+        print("U")
+        print(u_log)"""
+
+        loss = loss_x_h + loss_x_l + loss_u_min
+        if i == 0:
+            loss_log.append(loss.detach())
+
+
         
-        u_log.append(u.detach())
+        loss.backward()
+        optimizer.step()
+        ctl.psi_u.set_model_param()
 
 
-
-    """    print(x_log)
-    print("U")
-    print(u_log)"""
-
-    loss = loss_x_l + loss_x_h + loss_u
-    loss_log.append(loss.detach())
-
-
-    msg = "Epoch: {:>4d} --- Loss: {} ---||--- Loss x: {}".format(epoch, loss/t_end, loss_x_l)
-    msg += " --- Loss u: {:>9.4f} --- Loss x_l: {:>9.4f} --- Loss x_h: {}".format(loss_u,loss_x_l,loss_x_h)
-    msg += " --- Loss side: {:>9.2f}--- Loss barrier: {:>9.2f}".format(loss_side, loss_barrier)
-    loss.backward()
-    optimizer.step()
-    ctl.psi_u.set_model_param()
+    msg = "Epoch: {:>4d} --- Loss: {} ---||".format(epoch, loss)
+    msg += " --- Loss u: {:>9.4f} --- Loss x_l: {:>9.4f} --- Loss x_h: {}".format(loss_u_min,loss_x_l,loss_x_h)
+    msg += " --- Loss u_l: {:>9.4f}--- Loss u_act: {:>9.4f}".format(loss_u_h,loss_u_act)
     logger.info(msg)
 """    for j in x_log:
         print(j)
@@ -146,14 +156,12 @@ print("WOWWOWO")
 # # # # # # # # Print & plot results # # # # # # # #
 x_log = torch.zeros(t_end, sys.n)
 u_log = torch.zeros(t_end, sys.m)
-w_in = torch.zeros(t_end, sys.n)
-w_in = torch.zeros(t_end, sys.n)
-for i in range(len(w_in)):
-    w_in[i, :] = 0
+
+
 
 
 u = torch.zeros(sys.m)
-x = torch.tensor([x_init])
+x = torch.zeros(sys.n)
 xi = torch.zeros(ctl.psi_u.n_xi)
 omega = (x, u)
 for t in range(t_end):
@@ -166,6 +174,9 @@ for t in range(t_end):
     x_log[t] = x.detach()
     u_log[t] = u.detach()
 
+
+print(u_log)
+
 plt.figure()
 plt.plot(range(t+1),u_log.numpy())
 plt.title("U")
@@ -177,8 +188,13 @@ plt.title("X")
 plt.figure()
 plt.title("Loss")
 plt.plot(range(epochs),loss_log)
+
+plt.figure()
+plt.title("W")
+plt.plot(range(t),w_in[1:].detach())
 plt.show()
-# Number of collisions
+
+
 """
 # Set parameters to the best seen during training
 if validation and best_params is not None:

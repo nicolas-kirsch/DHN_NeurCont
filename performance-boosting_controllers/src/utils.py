@@ -1,5 +1,6 @@
 import torch
 import os
+import numpy as np
 import pickle
 
 
@@ -142,39 +143,32 @@ def get_ini_cond(n_agents):
     return x0, xbar
 
 
-def generate_data(sys_model, t_end, n_agents, random_seed, std_ini=None, std_dist=None):
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-    torch.manual_seed(random_seed)
-
-    file_path = os.path.join(BASE_DIR, 'data', sys_model)
-    path_exist = os.path.exists(file_path)
-    if not path_exist:
-        os.makedirs(file_path)
-
-    filename = 'data_' + sys_model
-    filename += '_stdini' + str(std_ini) if std_ini is not None else ''
-    filename += '_stddist' + str(std_dist) if std_dist is not None else ''
-    filename += '_agents' + str(n_agents) + '_RS' + str(random_seed) + '.pkl'
-    filename = os.path.join(file_path, filename)
-
-    if std_ini is None:
-        std_ini = 0
-    if std_dist is None:
-        std_dist = 0
+def generate_data(t_end,cp,mass):
 
     # generate data
-    n_data_total = 1000
-    n_states = 4 * n_agents
+    n_data_total = 50
+    n_states = 1
     n_w = n_states
-    mask = torch.cat([torch.ones(1, t_end, 2),
-                      torch.zeros(1, t_end, 2)], dim=-1).repeat(n_data_total, 1, n_agents)
-    data_w = std_dist * torch.randn(n_data_total, t_end, n_w)  # * mask[:,0,:]
-    data_x0 = std_ini * torch.randn(n_data_total, n_states) * mask[:, 0, :]
 
-    data = {'data_x0': data_x0, 'data_w': data_w, 't_end': t_end}
 
-    filehandler = open(filename, 'wb')
-    pickle.dump(data, filehandler)
-    filehandler.close()
-    print("Data saved at %s" % filename)
+    # Define the window size for the moving average
+    window_size = 3
+
+    # Initial heat demand profile (baseline)
+    heat_demand =  [30,20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 90, 80, 70, 60, 50, 60, 80, 100, 90, 80, 70, 50, 40]
+    # Compute the moving average
+    smoothed_heat_demand = np.convolve(heat_demand, np.ones(window_size)/window_size, mode='same')*0.06
+
+    data_x0 = 40 + 40*torch.rand(n_data_total, n_states)
+
+    d = torch.zeros(n_data_total,t_end,n_w)  
+
+    for i in range(n_data_total):
+        d[i] = torch.from_numpy(smoothed_heat_demand).reshape(t_end,n_w) + torch.randn(t_end,n_w)
+        d[i][0] = -data_x0[i]*cp*mass
+        
+
+
+    data = d
+
+    return data

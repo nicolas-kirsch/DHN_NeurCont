@@ -46,6 +46,10 @@ def f_upper_bound(x, bound):
 
     return loss_bound
 
+def f_activation(u, u_min):
+    loss = ((1-1/(1+torch.exp(-2*(u-u_min))))*u).sum()
+    return loss
+
 
 def f_loss_ca(x, sys, min_dist=0.5):
     min_sec_dist = min_dist + 0.2

@@ -1,0 +1,8 @@
+2024-06-27 17:12:03,040 
+------------ Begin training ------------
+Problem: corridor -- t_end: 100 -- lr: 1.00e-04 -- epochs: 2 -- n_traj: 1 -- std_ini: 0.50
+ -- alpha_u: 0.1000 -- alpha_ca: 1 -- alpha_obst: 5.0e+03
+REN info -- n_xi: 10 -- l: 10 use_sp: False
+--------- --------- ---------  ---------
+2024-06-27 17:12:03,149 Epoch:    0 --- Loss: 128491.2890625 ---|| --- Loss u: 22784.0000 --- Loss x_l:    0.0000 --- Loss x_h: 105187.4296875 --- Loss u_l:  553.3876--- Loss u_act:  -33.5322
+2024-06-27 17:12:03,255 Epoch:    1 --- Loss: nan ---|| --- Loss u:       nan --- Loss x_l:       nan --- Loss x_h: nan --- Loss u_l:       nan--- Loss u_act:       nan
