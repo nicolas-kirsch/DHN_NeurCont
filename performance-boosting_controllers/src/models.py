@@ -102,7 +102,6 @@ class Controller(nn.Module):
         self.m = m
         self.psi_x = PsiX(f)
         self.psi_u = PsiU(self.n, self.m, n_xi, l)
-        self.output_amplification = 1
         
     def forward(self, t, y_, xi, omega):
         psi_x, _ = self.psi_x(t, omega)
@@ -110,7 +109,7 @@ class Controller(nn.Module):
         w_ = y_ - psi_x
 
         u_, xi_ = self.psi_u(t, w_, xi)
-        u_ = u_ * self.output_amplification
+        
         omega_ = (y_, u_)
         return u_, xi_, omega_
 

@@ -23,13 +23,15 @@ prefix = ''
 
 # # # # # # # # Parameters and hyperparameters # # # # # # # #
 
-epochs = 5000
+epochs = 7000
 std_ini = 0.5
 l,n_xi = 10,10
+ren_n = 1
+ren_m = 2
 
 learning_rate = 1e-4 # *0.5
 
-alpha_u = 0.1
+alpha_u = 1
 # alpha_barrier = 5  # 250
 alpha_x = 1
 std_ini_param = 0.005
@@ -44,9 +46,6 @@ n_validation = 100
 
 show_plots = False
 t_end = 24
-t_ext = t_end * 4
-
-
 
 
 # # # # # # # # Set up logger # # # # # # # #
@@ -64,9 +63,9 @@ logger = WrapLogger(logger)
 
 # # # # # # # # Define models # # # # # # # #
 sys = DHN(mass=200, cop =2)
-ctl = Controller(sys.f, sys.n, sys.m, n_xi, l)
+ctl = Controller(sys.f, ren_n, ren_m, n_xi, l)
 
-data = generate_data(t_end,sys.cp,sys.mass, n_data_total=1000)
+data = generate_data(t_end,sys.cp,sys.mass, n_data_total=50)
 
 
 # # # # # # # # Define optimizer and parameters # # # # # # # #
@@ -91,6 +90,7 @@ for epoch in range(epochs):
     sample = random.randint(0,50)
     w_in = data[sample]
 
+
     optimizer.zero_grad()
     loss_x_l, loss_u_min, loss_x_h, loss_u_h,loss_u_l, loss_u_act  = 0, 0, 0, 0,0,0
 
@@ -108,16 +108,26 @@ for epoch in range(epochs):
 
     for t in range(t_end):
         x_prev = x
-        x, _ = sys(t, x, u, w_in[t, :])
+        x, _ = sys(t, x, u, w_in[t,:])
 
         u, xi, omega = ctl(t, x, xi, omega)
+
+        u_1 = u[0]
+        u_2 = u[1]
+
+        delta = (u_1 >= 0).to(u_1.dtype)
+        #delta = torch.heaviside(u_1,torch.zeros(1))
+
+        u = delta*u_2
+
+        omega = (omega[0],u) 
+
         loss_u_min = loss_u_min + alpha_u * f_loss_u(t, u)
         loss_x_l = loss_x_l + alpha_x * f_lower_bound(x,40)
 
         loss_x_h = loss_x_h + alpha_x * f_upper_bound(x,80)
-        loss_u_h = loss_u_h + f_upper_bound(u,3)
-        loss_u_l = loss_u_l + f_lower_bound(u,0)
-        #loss_u_act = loss_u_act + f_activation(u,1)
+        loss_u_h = loss_u_h + f_upper_bound(u_2,4)
+        loss_u_l = loss_u_l + f_lower_bound(u_2,2)
         
 
         x_log.append(x.detach())
@@ -125,7 +135,7 @@ for epoch in range(epochs):
         u_log.append(u.detach())
 
 
-    loss = loss_x_h + loss_x_l + loss_u_min + loss_u_h + loss_u_l
+    loss = loss_x_h + loss_x_l + loss_u_min + loss_u_h + loss_u_l 
     
     
     loss_log.append(loss.detach())
@@ -142,7 +152,7 @@ for epoch in range(epochs):
 
     msg = "Epoch: {:>4d} --- Loss: {} ---||".format(epoch, loss)
     msg += " --- Loss u: {:>9.4f} --- Loss x_l: {:>9.4f} --- Loss x_h: {}".format(loss_u_min,loss_x_l,loss_x_h)
-    msg += " --- Loss u_l: {:>9.4f}--- Loss u_act: {:>9.4f}".format(loss_u_h,loss_u_act)
+    msg += " --- Loss u2_l: {:>9.4f}--- Loss u2_h: {:>9.4f}".format(loss_u_h,loss_u_l)
     logger.info(msg)
 
 print("WOWWOWO")
@@ -153,8 +163,12 @@ ctl.psi_u.load_state_dict(best_params)
 validation_data = generate_data(t_end,sys.cp,sys.mass,n_data_total=1)
 w_in = validation_data[0]
 
+
 x_log = torch.zeros(t_end, sys.n)
 u_log = torch.zeros(t_end, sys.m)
+u2_log = torch.zeros(t_end, sys.m)
+u1_log = torch.zeros(t_end, sys.m)
+delta_log = torch.zeros(t_end, sys.m)
 
 
 u = torch.zeros(sys.m)
@@ -165,24 +179,41 @@ omega = (x, u)
 #### TODO: generate validation data
 for t in range(t_end):
 
-    x, _ = sys(t, x, u, w_in[t, :])
+    x, _ = sys(t, x, u, w_in[t,:])
+    
+
     u, xi, omega = ctl(t, x, xi, omega)
+    
+    u_1 = u[0]
+    u_2 = u[1]
 
+    delta = (u_1 >= 0).to(u_1.dtype)
 
+    u = delta*u_2
+    omega = (omega[0],u) 
 
     x_log[t] = x.detach()
     u_log[t] = u.detach()
+    u2_log[t] = u_2.detach()
+    u1_log[t] = u_1.detach()
+    delta_log[t] = delta.detach()
 
 
-
+print(u2_log)
+print(u1_log)
+print(delta_log)
 plt.figure()
 plt.plot(range(t+1),u_log.numpy())
+plt.plot(range(t+1),[2]*(t+1), "--", c = "grey")
+plt.plot(range(t+1),[4]*(t+1), "--",c = "grey" )
 plt.title("U profile over the horizon")
 plt.xlabel("Time (h)")
 plt.ylabel("Energy consumption (MJ)")
 
 plt.figure()
 plt.plot(range(t+1),x_log.numpy())
+plt.plot(range(t+1),[40]*(t+1), "--", c = "grey")
+plt.plot(range(t+1),[80]*(t+1), "--",c = "grey" )
 plt.title("X profile over the horizon")
 plt.xlabel("Time (h)")
 plt.ylabel("Temperature (°C)")

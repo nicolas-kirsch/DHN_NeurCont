@@ -1,0 +1,5 @@
+2024-07-04 11:33:28,789 
+------------ Begin training ------------
+Problem: DHN -- t_end: 24 -- lr: 1.00e-04 -- epochs: 2 -- alpha_u: 1.0000 -- alpha_x: 1 -- REN info -- n_xi: 10 -- l: 10 --------- --------- ---------  ---------
+2024-07-04 11:33:28,822 Epoch:    0 --- Loss: 25336.669921875 ---|| --- Loss u:    6.4984 --- Loss x_l: 25330.1719 --- Loss x_h: 0.0 --- Loss u_l:    0.0000--- Loss u_act:  625.0675
+2024-07-04 11:33:28,846 Epoch:    1 --- Loss: nan ---|| --- Loss u:       nan --- Loss x_l:       nan --- Loss x_h: nan --- Loss u_l:       nan--- Loss u_act:       nan

@@ -167,8 +167,6 @@ for t in range(t_end):
     u_log[t] = u.detach()
 
 
-print(u_log)
-
 plt.figure()
 plt.plot(range(t+1),u_log.numpy())
 plt.title("U profile over the horizon")
