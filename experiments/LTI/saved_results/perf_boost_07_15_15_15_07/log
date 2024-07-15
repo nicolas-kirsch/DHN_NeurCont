@@ -7,3 +7,7 @@
 2024-07-15 15:16:12,269 Epoch: 600 --- train loss: 16.71 ---||--- validation loss: 13.06 (best so far) ---||--- time: 16 s
 2024-07-15 15:16:28,641 Epoch: 750 --- train loss: 16.63 ---||--- validation loss: 12.89 (best so far) ---||--- time: 16 s
 2024-07-15 15:16:44,997 Epoch: 900 --- train loss: 0.31 ---||--- validation loss: 12.73 (best so far) ---||--- time: 16 s
+2024-07-15 15:17:01,222 Epoch: 1050 --- train loss: 13.18 ---||--- validation loss: 12.76 ---||--- time: 16 s
+2024-07-15 15:17:17,372 Epoch: 1200 --- train loss: 19.75 ---||--- validation loss: 12.64 (best so far) ---||--- time: 16 s
+2024-07-15 15:17:33,556 Epoch: 1350 --- train loss: 10.72 ---||--- validation loss: 13.01 ---||--- time: 16 s
+2024-07-15 15:17:49,787 Epoch: 1500 --- train loss: 19.17 ---||--- validation loss: 12.58 (best so far) ---||--- time: 16 s

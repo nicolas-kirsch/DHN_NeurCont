@@ -46,7 +46,7 @@ dataset = DHNDataset(
 )
 
 # divide to train and test
-train_data, test_data = dataset.get_data(num_train_samples=args.num_rollouts, num_test_samples=500)
+train_data, test_data = dataset.get_data(num_train_samples=args.num_rollouts, num_test_samples=20)
 train_data, test_data = train_data.to(device), test_data.to(device)
 
 
@@ -75,13 +75,14 @@ ctl = PerfBoostController(
 
 
 loss_fn = DHNLoss(
-    R=args.alpha_u, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
-    alpha_uh = 1, alpha_ul=1,alpha_xh=1,alpha_xl=1
+    R=args.alpha_u*100, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
+    #alpha_uh = 1, alpha_ul=1,alpha_xh=1,a
+    alpha_xl=0.1
 )
 
 
 # ------------ 5. Optimizer ------------
-optimizer = torch.optim.Adam(ctl.parameters(), lr=args.lr)
+optimizer = torch.optim.Adam(ctl.parameters(), lr=args.lr, weight_decay = 0.01)
 valid_data = train_data      # use the entire train data for validation
 
 ### Test forward without demand and input ###
@@ -113,14 +114,14 @@ for epoch in range(1+args.epochs):
         # simulate over horizon steps
         x_log, u_log = sys.rollout(controller=ctl, data=train_data_batch)
         # loss of this rollout
-        loss = loss_fn.forward(x_log, u_log)
+        loss, loss_x, loss_u = loss_fn.forward(x_log, u_log)
         # take a step
         loss.backward()
         optimizer.step()
 
     # print info
     if epoch%args.log_epoch == 0:
-        msg = 'Epoch: %i --- train loss: %.2f'% (epoch, loss)
+        msg = 'Epoch: %i --- train loss: %.2f --- Loss x : %.2f ---  loss u: %.2f'% (epoch, loss, loss_x,loss_u)
 
         if args.return_best:
             # rollout the current controller on the valid data
@@ -129,8 +130,8 @@ for epoch in range(1+args.epochs):
                     controller=ctl, data=valid_data
                 )
                 # loss of the valid data
-                loss_valid = loss_fn.forward(x_log_valid, u_log_valid)
-            msg += ' ---||--- validation loss: %.2f' % (loss_valid.item())
+                loss_valid, loss_x_v, loss_u_v = loss_fn.forward(x_log_valid, u_log_valid)
+            msg += ' ---||--- validation loss: %.2f  --- Loss x v: %.2f ---  loss u v: %.2f' % (loss_valid,loss_x_v,loss_u_v)
             # compare with the best valid loss
             if loss_valid.item()<best_valid_loss:
                 best_valid_loss = loss_valid.item()
@@ -153,22 +154,20 @@ with torch.no_grad():
 
 plt.figure()
 for i in range(valid_data.shape[0]): 
-    if i % 5 == 0: 
-        plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
-        plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
-        plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
-        plt.title("X profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.ylabel("Temperature (°C)")
+    plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
+    plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
+    plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
+    plt.title("X profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Temperature (°C)")
 
 plt.figure()
 for i in range(valid_data.shape[0]): 
-    if i % 5 == 0: 
-        plt.plot(range(test_data.shape[1]),u_log_test[i],label = i )
-        plt.plot(range(test_data.shape[1]),[0]*(test_data.shape[1]), "--", c = "grey")
-        plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
-        plt.title("U profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.legend()
-        plt.ylabel("Energy (MJ)")
+    plt.plot(range(test_data.shape[1]),u_log_test[i],label = i )
+    plt.plot(range(test_data.shape[1]),[0]*(test_data.shape[1]), "--", c = "grey")
+    plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
+    plt.title("U profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.legend()
+    plt.ylabel("Energy (MJ)")
 plt.show()

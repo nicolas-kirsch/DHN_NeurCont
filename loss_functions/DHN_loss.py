@@ -75,14 +75,14 @@ class DHNLoss():
         
         
         # upper bound on input loss
-        if self.alpha_xl is None:
+        if self.alpha_uh is None:
             loss_uh = 0
         else:
             loss_uh = self.alpha_uh * self.f_upper_bound_u(u_batch) # shape = (S, 1, 1)
         
 
         # lower bound on input loss
-        if self.alpha_xl is None:
+        if self.alpha_ul is None:
             loss_ul = 0
         else:
             loss_ul = self.alpha_ul * self.f_lower_bound_u(u_batch) # shape = (S, 1, 1)
@@ -92,7 +92,7 @@ class DHNLoss():
         loss_val = loss_u + loss_ul + loss_uh + loss_xh + loss_xl          # shape = (S, 1, 1)
         
         loss_val = torch.sum(loss_val, 0)/xs.shape[0]       # shape = (1, 1)
-        return loss_val
+        return loss_val, torch.sum(loss_xl,0)/xs.shape[0] , torch.sum(loss_u,0)/xs.shape[0] 
 
     
     def f_upper_bound_x(self, x_batch): 
@@ -105,7 +105,7 @@ class DHNLoss():
         delta = x_batch - self.xmax  
 
 
-        loss_bound = 100*torch.relu(delta)
+        loss_bound = torch.relu(delta)**2
         loss_xh = loss_bound.sum(1)/loss_bound.shape[1]
         return loss_xh.reshape(-1,1,1)
 
@@ -116,7 +116,7 @@ class DHNLoss():
         delta = self.xmin - x_batch  
 
 
-        loss_bound = 100*torch.relu(delta)
+        loss_bound = torch.relu(delta)**2
         loss_xl = loss_bound.sum(1)/loss_bound.shape[1]
         return loss_xl.reshape(-1,1,1)
 
