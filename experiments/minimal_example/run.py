@@ -71,6 +71,8 @@ plot_trajectories(
 
 # ------------ 4. Loss ------------
 Q = torch.kron(torch.eye(args.n_agents), torch.eye(4)).to(device)   # TODO: move to args and print info
+
+
 loss_fn = RobotsLoss(
     Q=Q, alpha_u=args.alpha_u, xbar=dataset.xbar,
     loss_bound=None, sat_bound=None,

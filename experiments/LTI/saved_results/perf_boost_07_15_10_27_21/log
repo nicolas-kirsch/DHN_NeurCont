@@ -1,0 +1,3 @@
+2024-07-15 10:27:21,989 
+------------ Begin training ------------
+2024-07-15 10:27:22,164 Epoch: 0 --- train loss: 1655.86 ---||--- validation loss: 1854.52 (best so far) ---||--- time: 0 s

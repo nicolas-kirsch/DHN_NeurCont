@@ -1,0 +1,20 @@
+2024-07-15 09:55:31,055 
+[INFO] Dataset: n_agents: 2 -- num_rollouts: 30 -- std_ini: 0.20 -- time horizon: 100
+[INFO] Plant: spring constant: 1.00 -- use linearized plant: False
+[INFO] Controller: dimension of the internal state: 8 -- l: 8 -- cont_init_std: 0.10
+[INFO] Loss:  alpha_u: 0.000250 -- alpha_col: 100 -- alpha_obst: 5000.0
+[INFO] Optimizer: lr: 2.00e-03 -- batch_size: 5, -- return best model for validation data among logged epochs:True
+2024-07-15 09:55:31,057 Plotting closed-loop trajectories before training the controller...
+2024-07-15 09:55:36,411 
+------------ Begin training ------------
+2024-07-15 09:55:37,182 Epoch: 0 --- train loss: 139.37 ---||--- validation loss: 135.81 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:37,949 Epoch: 1 --- train loss: 145.18 ---||--- validation loss: 127.93 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:38,755 Epoch: 2 --- train loss: 129.60 ---||--- validation loss: 119.02 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:39,527 Epoch: 3 --- train loss: 112.44 ---||--- validation loss: 113.30 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:40,312 Epoch: 4 --- train loss: 117.26 ---||--- validation loss: 106.22 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:41,088 Epoch: 5 --- train loss: 95.44 ---||--- validation loss: 98.30 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:41,881 Epoch: 6 --- train loss: 88.26 ---||--- validation loss: 91.41 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:42,656 Epoch: 7 --- train loss: 85.62 ---||--- validation loss: 87.71 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:43,448 Epoch: 8 --- train loss: 86.43 ---||--- validation loss: 82.92 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:44,218 Epoch: 9 --- train loss: 77.69 ---||--- validation loss: 80.23 (best so far) ---||--- time: 1 s
+2024-07-15 09:55:44,993 Epoch: 10 --- train loss: 78.07 ---||--- validation loss: 77.01 (best so far) ---||--- time: 1 s

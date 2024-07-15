@@ -1,0 +1,13 @@
+2024-07-15 10:10:03,737 
+------------ Begin training ------------
+2024-07-15 10:10:03,916 Epoch: 0 --- train loss: 0.41 ---||--- validation loss: 0.46 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,084 Epoch: 1 --- train loss: 0.27 ---||--- validation loss: 0.42 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,246 Epoch: 2 --- train loss: 0.44 ---||--- validation loss: 0.37 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,412 Epoch: 3 --- train loss: 0.38 ---||--- validation loss: 0.33 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,575 Epoch: 4 --- train loss: 0.31 ---||--- validation loss: 0.29 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,748 Epoch: 5 --- train loss: 0.20 ---||--- validation loss: 0.25 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:04,915 Epoch: 6 --- train loss: 0.26 ---||--- validation loss: 0.22 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:05,083 Epoch: 7 --- train loss: 0.24 ---||--- validation loss: 0.19 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:05,245 Epoch: 8 --- train loss: 0.14 ---||--- validation loss: 0.16 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:05,409 Epoch: 9 --- train loss: 0.15 ---||--- validation loss: 0.14 (best so far) ---||--- time: 0 s
+2024-07-15 10:10:05,581 Epoch: 10 --- train loss: 0.08 ---||--- validation loss: 0.11 (best so far) ---||--- time: 0 s

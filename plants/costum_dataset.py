@@ -48,7 +48,7 @@ class CostumDataset(Dataset):
         test_data = self._generate_data(1024)
         # save
         filehandler = open(self.file_name, 'wb')
-        pickle.dump({'train_data_full': train_data_full, 'test_data': test_data}, filehandler)
+        pickle.dump({'train_data_full': train_data_full.detach().cpu(), 'test_data': test_data.detach().cpu()}, filehandler)
         filehandler.close()
 
     def _load_data(self):
@@ -56,8 +56,11 @@ class CostumDataset(Dataset):
         No need to change.
         Loads the data. If data doesn't exist, saves it.
         '''
+        print(self.file_name)
+        print("Oula")
         # check if data exists
         if not os.path.isfile(self.file_name):
+            print("OKOKOK")
             self._save_data()
         # load data
         filehandler = open(self.file_name, 'rb')

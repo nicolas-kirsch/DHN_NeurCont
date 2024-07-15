@@ -86,7 +86,6 @@ class PerfBoostController(nn.Module):
         Return:
             y_out (torch.Tensor): Output with (batch_size, 1, self.dim_out).
         """
-
         # apply noiseless forward to get noise less input (noise less state of the plant)
         u_noiseless = self.noiseless_forward(
             t=self.t,
@@ -119,7 +118,7 @@ class PerfBoostController(nn.Module):
 
     def set_parameter(self, name, value):
         current_val = getattr(self.c_ren, name)
-        value = torch.nn.Parameter(value.reshape(current_val.shape))
+        value = torch.nn.Parameter(to_tensor(value.reshape(current_val.shape)))
         setattr(self.c_ren, name, value)
         self.c_ren._update_model_param()    # update dependent params
 

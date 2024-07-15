@@ -2,8 +2,11 @@ import torch
 from assistive_functions import to_tensor
 
 # ---------- SYSTEM ----------
-class LTISystem:
+class LTISystem(torch.nn.Module):
     def __init__(self, A, B, C, x_init):
+
+        super().__init__()
+
         self.A, self.B, self.C = to_tensor(A), to_tensor(B), to_tensor(C)
         self.x_init = to_tensor(x_init)
 
