@@ -75,9 +75,9 @@ ctl = PerfBoostController(
 
 
 loss_fn = DHNLoss(
-    R=args.alpha_u*100, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
-    #alpha_uh = 1, alpha_ul=1,alpha_xh=1,a
-    alpha_xl=0.1
+    R=args.alpha_u*10, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
+    #alpha_uh = 10, alpha_ul=20,alpha_xh=10,
+    alpha_xl=20
 )
 
 
@@ -116,13 +116,16 @@ for epoch in range(1+args.epochs):
         # loss of this rollout
         loss, loss_x, loss_u = loss_fn.forward(x_log, u_log)
         # take a step
+        """loss_xh = loss_fn.alpha_xh*torch.sum(loss_fn.f_upper_bound_x(x_log),0)/x_log.shape[0]
+        loss_ul = loss_fn.alpha_ul*torch.sum(loss_fn.f_lower_bound_u(u_log),0)/x_log.shape[0]
+        loss_uh = loss_fn.alpha_uh*torch.sum(loss_fn.f_upper_bound_u(u_log),0)/x_log.shape[0]"""
         loss.backward()
         optimizer.step()
 
     # print info
     if epoch%args.log_epoch == 0:
-        msg = 'Epoch: %i --- train loss: %.2f --- Loss x : %.2f ---  loss u: %.2f'% (epoch, loss, loss_x,loss_u)
-
+        msg = 'Epoch: %i --- train loss: %.2f --- Loss xl : %.2f ---  loss u min: %.2f'% (epoch, loss, loss_x,loss_u)
+        #msg +='--- Loss xh : %.2f ---  loss ul: %.2f---  loss uh: %.2f'% (loss_xh, loss_ul, loss_uh)
         if args.return_best:
             # rollout the current controller on the valid data
             with torch.no_grad():
@@ -152,6 +155,19 @@ with torch.no_grad():
         controller=ctl, data=valid_data
     )
 
+
+lower_bound_losses = loss_fn.f_lower_bound_x(x_batch=x_log_test,s = False)
+
+plt.figure()
+for i in range(valid_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),lower_bound_losses[i],label = valid_data[i,0,0].detach().numpy().astype(int))
+    plt.title("Loss X profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Loss X")
+    plt.legend()
+
+
+
 plt.figure()
 for i in range(valid_data.shape[0]): 
     plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
@@ -163,11 +179,10 @@ for i in range(valid_data.shape[0]):
 
 plt.figure()
 for i in range(valid_data.shape[0]): 
-    plt.plot(range(test_data.shape[1]),u_log_test[i],label = i )
+    plt.plot(range(test_data.shape[1]),u_log_test[i],label = valid_data[i,0,0].detach().numpy().astype(int))
     plt.plot(range(test_data.shape[1]),[0]*(test_data.shape[1]), "--", c = "grey")
     plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
     plt.title("U profile over the horizon")
     plt.xlabel("Time (h)")
-    plt.legend()
     plt.ylabel("Energy (MJ)")
 plt.show()

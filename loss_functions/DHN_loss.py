@@ -111,14 +111,17 @@ class DHNLoss():
 
 
 
-    def f_lower_bound_x(self, x_batch):
+    def f_lower_bound_x(self, x_batch,s = True):
 
         delta = self.xmin - x_batch  
 
 
         loss_bound = torch.relu(delta)**2
-        loss_xl = loss_bound.sum(1)/loss_bound.shape[1]
-        return loss_xl.reshape(-1,1,1)
+        if s == True: 
+            loss_xl = loss_bound.sum(1)/loss_bound.shape[1]
+            return loss_xl.reshape(-1,1,1)
+        else: 
+            return loss_bound
 
 
     def f_upper_bound_u(self, u_batch): 

@@ -31,13 +31,13 @@ class DHNDataset(CostumDataset):
             self.umax = umax
             
         if xmin == None:
-            self.xmin = torch.tensor([25
+            self.xmin = torch.tensor([15
                                   ])
         else: 
             self.xmin = xmin
             
         if xmax == None:
-            self.xmax = torch.tensor([65
+            self.xmax = torch.tensor([55
                                   ])
         else: 
             self.xmax = xmax 
