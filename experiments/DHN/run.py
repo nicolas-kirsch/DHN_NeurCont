@@ -77,32 +77,16 @@ ctl = PerfBoostController(
 
 
 loss_fn = DHNLoss(
-    R=args.alpha_u*100, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
-    #alpha_uh = 1, alpha_ul=1,alpha_xh=1,a
-    alpha_xl=0.1
+    R=args.alpha_u*1.5, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
+    alpha_xh = 12, alpha_uh=10,
+    alpha_xl=25,
+    alpha_ul = 17
 )
 
 
 # ------------ 5. Optimizer ------------
-optimizer = torch.optim.Adam(ctl.parameters(), lr=args.lr, weight_decay = 0.01)
+optimizer = torch.optim.Adam(ctl.parameters(), lr=args.lr)
 valid_data = train_data      # use the entire train data for validation
-
-### Test forward without demand and input ###
-"""zero_cons = torch.zeros(1,24,1)
-zero_cons[0,0,0] = 50
-
-with torch.no_grad():
-    x_log_test, u_log_test = sys.rollout(
-        controller=ctl, data=train_data[0:1,:,0:1]
-    )
-
-plt.plot(range(test_data.shape[1]),x_log_test[0])
-plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
-plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
-plt.title("X profile over the horizon")
-plt.xlabel("Time (h)")
-plt.ylabel("Temperature (°C)")
-plt.show()"""
 
 
 # ------------ 6. Training ------------
@@ -118,13 +102,16 @@ for epoch in range(1+args.epochs):
         # loss of this rollout
         loss, loss_x, loss_u = loss_fn.forward(x_log, u_log)
         # take a step
+        """loss_xh = loss_fn.alpha_xh*torch.sum(loss_fn.f_upper_bound_x(x_log),0)/x_log.shape[0]
+        loss_ul = loss_fn.alpha_ul*torch.sum(loss_fn.f_lower_bound_u(u_log),0)/x_log.shape[0]
+        loss_uh = loss_fn.alpha_uh*torch.sum(loss_fn.f_upper_bound_u(u_log),0)/x_log.shape[0]"""
         loss.backward()
         optimizer.step()
 
     # print info
     if epoch%args.log_epoch == 0:
-        msg = 'Epoch: %i --- train loss: %.2f --- Loss x : %.2f ---  loss u: %.2f'% (epoch, loss, loss_x,loss_u)
-
+        msg = 'Epoch: %i --- train loss: %.2f --- Loss xl : %.2f ---  loss u min: %.2f'% (epoch, loss, loss_x,loss_u)
+        #msg +='--- Loss xh : %.2f ---  loss ul: %.2f---  loss uh: %.2f'% (loss_xh, loss_ul, loss_uh)
         if args.return_best:
             # rollout the current controller on the valid data
             with torch.no_grad():
@@ -154,22 +141,45 @@ with torch.no_grad():
         controller=ctl, data=valid_data
     )
 
-plt.figure()
-for i in range(valid_data.shape[0]): 
-    plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
-    plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
-    plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
-    plt.title("X profile over the horizon")
-    plt.xlabel("Time (h)")
-    plt.ylabel("Temperature (°C)")
+
+lower_bound_losses = loss_fn.f_lower_bound_x(x_batch=x_log_test,s = False)
+lower_bound_u = loss_fn.f_lower_bound_u(u_batch=u_log_test,s = False)
+
 
 plt.figure()
 for i in range(valid_data.shape[0]): 
-    plt.plot(range(test_data.shape[1]),u_log_test[i],label = i )
-    plt.plot(range(test_data.shape[1]),[0]*(test_data.shape[1]), "--", c = "grey")
-    plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
-    plt.title("U profile over the horizon")
-    plt.xlabel("Time (h)")
-    plt.legend()
-    plt.ylabel("Energy (MJ)")
+    if i % 3 == 1: 
+        plt.plot(range(test_data.shape[1]),lower_bound_losses[i],label = valid_data[i,0,0].detach().numpy().astype(int))
+        plt.title("Loss X profile over the horizon")
+        plt.xlabel("Time (h)")
+        plt.ylabel("Loss X")
+
+plt.figure()
+for i in range(valid_data.shape[0]): 
+    if i % 3 == 0: 
+        plt.plot(range(test_data.shape[1]),lower_bound_u[i],label = valid_data[i,0,0].detach().numpy().astype(int))
+        plt.title("Loss  U profile over the horizon")
+        plt.xlabel("Time (h)")
+        plt.ylabel("Loss U")
+
+
+plt.figure()
+for i in range(valid_data.shape[0]): 
+    if i % 3 == 0: 
+        plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
+        plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
+        plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
+        plt.title("X profile over the horizon")
+        plt.xlabel("Time (h)")
+        plt.ylabel("Temperature (°C)")
+
+plt.figure()
+for i in range(valid_data.shape[0]): 
+    if i % 3 == 0: 
+        plt.plot(range(test_data.shape[1]),u_log_test[i],label = valid_data[i,0,0].detach().numpy().astype(int))
+        plt.plot(range(test_data.shape[1]),[0]*(test_data.shape[1]), "--", c = "grey")
+        plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
+        plt.title("U profile over the horizon")
+        plt.xlabel("Time (h)")
+        plt.ylabel("Energy (MJ)")
 plt.show()
