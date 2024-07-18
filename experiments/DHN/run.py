@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python3
 import sys, os, logging, torch,time
 from datetime import datetime
 import numpy as np
@@ -58,6 +58,8 @@ sys = DHNSystem(
     mass=200,cop = 2
 ).to(device)
 
+print("U init")
+print(sys.u_init.get_device())
 
 ctl = PerfBoostController(
     noiseless_forward=sys.noiseless_forward,

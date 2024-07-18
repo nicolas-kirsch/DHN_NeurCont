@@ -2,6 +2,7 @@ import torch
 from assistive_functions import to_tensor
 import numpy as np
 import torch.nn.functional as F
+from config import device
 
 
 # ---------- SYSTEM ----------
@@ -27,13 +28,17 @@ class DHNSystem(torch.nn.Module):
         assert self.B.shape == (self.state_dim, self.in_dim)
         assert self.x_init.shape == (self.state_dim, 1)
 
-        self.u_init = torch.zeros(1, int(self.x_init.shape[1])) if u_init is None else u_init.reshape(1, -1)   # shape = (1, in_dim)
+
+
+        self.u_init = torch.zeros(1, int(self.x_init.shape[1])).to(device) if u_init is None else u_init.reshape(1, -1)   # shape = (1, in_dim)
 
 
 
     def noiseless_forward(self, t, x: torch.Tensor, u: torch.Tensor):
         x = x.view(-1, 1, self.state_dim)
         u = u.view(-1, 1, self.in_dim)
+
+
 
         f = F.linear(x, self.A) + F.linear(u, self.B)
         return f
