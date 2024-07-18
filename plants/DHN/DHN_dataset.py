@@ -59,18 +59,17 @@ class DHNDataset(CostumDataset):
 
         # Initial heat demand profile (baseline)
         heat_demand =  [30,20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 90, 80, 70, 60, 50, 60, 80, 100, 90, 80, 70, 50, 40]
-        heat_demand = np.zeros(len(heat_demand))
+        #heat_demand = np.zeros(len(heat_demand))
         # Compute the moving average
-        #smoothed_heat_demand = -np.convolve(heat_demand, np.ones(window_size)/window_size, mode='same')*0.06
+        smoothed_heat_demand = -np.convolve(heat_demand, np.ones(window_size)/window_size, mode='same')*0.06
  
         data_x0 = (40 + 40*torch.rand(n_data_total, n_states))-25
-        print("D_x0")
-        print(data_x0)
+
         d = torch.zeros(n_data_total,self.horizon,n_w)  
 
         for i in range(n_data_total):
-            #d[i] = torch.from_numpy(smoothed_heat_demand).reshape(self.horizon,n_w) + torch.randn(self.horizon,n_w)
-            d[i] = torch.from_numpy(heat_demand).reshape(self.horizon,n_w) 
+            d[i] = torch.from_numpy(smoothed_heat_demand).reshape(self.horizon,n_w) + torch.randn(self.horizon,n_w)
+            #d[i] = torch.from_numpy(heat_demand).reshape(self.horizon,n_w) 
             d[i][0] = data_x0[i]*self.cp*self.mass
             
 
