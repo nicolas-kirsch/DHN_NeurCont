@@ -78,9 +78,9 @@ class ContractiveREN(nn.Module):
         self.D12_shape = (self.dim_nl, self.dim_in)
 
         # define trainble params
-        self.training_param_names = ['X', 'Y', 'B2', 'C2', 'D21', 'D22', 'D12']
+        self.training_param_names = ['X', 'Y', 'B2', 'C2', 'D21', 'D12']
         self._init_trainable_params(initialization_std)
-
+        self.register_buffer('D22', torch.zeros(self.D22_shape))
         # mask
         self.register_buffer('eye_mask_H', torch.eye(2 * self.dim_internal + self.dim_nl))
         self.register_buffer('eye_mask_w', torch.eye(self.dim_nl))

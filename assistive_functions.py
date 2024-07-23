@@ -7,6 +7,21 @@ def to_tensor(x):
     return torch.from_numpy(x).contiguous().float().to(device) if isinstance(x, np.ndarray) else x
 
 
+def saturate(u,umin,umax):
+    u[u < umin] = umin
+    u[u > umax] = umax
+
+    return u.to(device)
+
+"""def heaviside(u,k=5):
+    heavi_u = torch.where(u<0,(torch.exp(k*u))/(1+torch.exp(k*u)),1/(1+torch.exp(-k*u))) 
+
+    return heavi_u"""
+
+def heaviside(u,m =0.01, alpha = 1):
+    heavi_u = torch.minimum(torch.maximum(u/m+alpha/2,torch.zeros(u.shape).to(device)),alpha*torch.ones(u.shape).to(device))
+    return heavi_u
+
 class WrapLogger():
     def __init__(self, logger, verbose=True):
         self.can_log = (logger is not None)

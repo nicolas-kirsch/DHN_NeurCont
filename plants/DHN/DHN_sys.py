@@ -1,5 +1,5 @@
 import torch
-from assistive_functions import to_tensor
+from assistive_functions import to_tensor, saturate
 import numpy as np
 import torch.nn.functional as F
 from config import device
@@ -69,10 +69,13 @@ class DHNSystem(torch.nn.Module):
             - data (torch.Tensor): batch of disturbance samples, with shape (batch_size, T, state_dim)
         """
 
-  
         controller.reset()
         xs = (data[:, 0:1, :]/(self.mass*self.cp))
+        
         us = controller.forward(xs[:, 0:1, :])
+        
+        u_2 = controller.u2
+        u_1 = controller.u1
         for t in range(1, data.shape[1]):
             xs = torch.cat(
                 (
@@ -86,6 +89,15 @@ class DHNSystem(torch.nn.Module):
                 1
             )
 
+            u_2 = torch.cat(
+                (u_2, controller.u2),
+                1
+            )
+
+            u_1 = torch.cat(
+                (u_1, controller.u1),
+                1
+            )
         controller.reset()
         
-        return xs, us
+        return xs, us, u_2, u_1

@@ -2,6 +2,7 @@ import torch
 import numpy as np # TODO: move to torch
 from plants import CostumDataset
 import matplotlib.pyplot as plt
+from config import device
 
 
 class DHNDataset(CostumDataset):
@@ -19,26 +20,26 @@ class DHNDataset(CostumDataset):
         self.state_dim = state_dim
 
         if umin == None:
-            self.umin = torch.tensor([0
-                                  ])
+            self.umin = torch.tensor([2
+                                  ]).to(device)
         else: 
             self.umin = umin
 
         if umax == None:
             self.umax = torch.tensor([4
-                                  ])
+                                  ]).to(device)
         else: 
             self.umax = umax
             
         if xmin == None:
-            self.xmin = torch.tensor([15
-                                  ])
+            self.xmin = torch.tensor([45
+                                  ]).to(device)
         else: 
             self.xmin = xmin
             
         if xmax == None:
             self.xmax = torch.tensor([55
-                                  ])
+                                  ]).to(device)
         else: 
             self.xmax = xmax 
 
@@ -59,7 +60,7 @@ class DHNDataset(CostumDataset):
 
         # Initial heat demand profile (baseline)
         heat_demand =  [30,20, 25, 30, 35, 40, 50, 60, 70, 80, 100, 90, 80, 70, 60, 50, 60, 80, 100, 90, 80, 70, 50, 40]
-        #heat_demand = np.zeros(len(heat_demand))
+        heat_demand = np.zeros(len(heat_demand))
         # Compute the moving average
         smoothed_heat_demand = -np.convolve(heat_demand, np.ones(window_size)/window_size, mode='same')*0.06
  
@@ -68,12 +69,11 @@ class DHNDataset(CostumDataset):
         d = torch.zeros(n_data_total,self.horizon,n_w)  
 
         for i in range(n_data_total):
-            d[i] = torch.from_numpy(smoothed_heat_demand).reshape(self.horizon,n_w) + torch.randn(self.horizon,n_w)
-            #d[i] = torch.from_numpy(heat_demand).reshape(self.horizon,n_w) 
+            #d[i] = torch.from_numpy(smoothed_heat_demand).reshape(self.horizon,n_w) + torch.randn(self.horizon,n_w)
+            d[i] = torch.from_numpy(heat_demand).reshape(self.horizon,n_w) 
             d[i][0] = data_x0[i]*self.cp*self.mass
             
-
-
+        
         data = d
 
         return data

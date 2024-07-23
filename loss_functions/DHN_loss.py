@@ -38,7 +38,7 @@ class DHNLoss():
         print(self.R)
 
 
-    def forward(self, xs, us):
+    def forward(self, xs, us,u2):
         """
         Compute loss.
 
@@ -49,9 +49,12 @@ class DHNLoss():
         Return:
             - loss of shape (1, 1).
         """
+
         # batch
         x_batch = xs.reshape(*xs.shape,1)
         u_batch = us.reshape(*us.shape, 1)
+
+        u2_batch = u2.reshape(*u2.shape, 1)
         # loss states = 1/T sum_{t=1}^T (x_t-xbar)^T Q (x_t-xbar)
         
         # loss control actions = 1/T sum_{t=1}^T u_t^T R u_t
@@ -78,21 +81,25 @@ class DHNLoss():
         if self.alpha_uh is None:
             loss_uh = 0
         else:
-            loss_uh = self.alpha_uh * self.f_upper_bound_u(u_batch) # shape = (S, 1, 1)
+            loss_uh = self.alpha_uh * self.f_upper_bound_u(u2_batch) # shape = (S, 1, 1)
+
+
         
 
         # lower bound on input loss
         if self.alpha_ul is None:
             loss_ul = 0
         else:
-            loss_ul = self.alpha_ul * self.f_lower_bound_u(u_batch) # shape = (S, 1, 1)
+            loss_ul = self.alpha_ul * self.f_lower_bound_u(u2_batch) # shape = (S, 1, 1)
+
         
         
+
         # sum up all losses
         loss_val = loss_u + loss_ul + loss_uh + loss_xh + loss_xl          # shape = (S, 1, 1)
         
         loss_val = torch.sum(loss_val, 0)/xs.shape[0]       # shape = (1, 1)
-        return loss_val, 0 , torch.sum(loss_u,0)/xs.shape[0] 
+        return loss_val, torch.sum(loss_xl,0)/xs.shape[0], torch.sum(loss_u,0)/xs.shape[0] 
 
     
     def f_upper_bound_x(self, x_batch): 
