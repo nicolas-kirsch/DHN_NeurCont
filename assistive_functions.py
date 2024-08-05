@@ -18,8 +18,8 @@ def saturate(u,umin,umax):
 
     return heavi_u"""
 
-def heaviside(u,m =0.01, alpha = 1):
-    heavi_u = torch.minimum(torch.maximum(u/m+alpha/2,torch.zeros(u.shape).to(device)),alpha*torch.ones(u.shape).to(device))
+def heaviside(u,m =10**(-3), alpha = 1):
+    heavi_u = torch.minimum(torch.maximum(u/m+alpha/2-4,torch.zeros(u.shape).to(device)),alpha*torch.ones(u.shape).to(device))
     return heavi_u
 
 class WrapLogger():

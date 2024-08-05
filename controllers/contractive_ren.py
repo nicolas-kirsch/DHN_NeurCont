@@ -1,7 +1,8 @@
-import torch
+import torch, os, pickle
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
+from config import device, BASE_DIR
 
 
 class ContractiveREN(nn.Module):
@@ -28,7 +29,7 @@ class ContractiveREN(nn.Module):
 
     def __init__(
         self, dim_in: int, dim_out: int, dim_internal: int,
-        dim_nl: int, internal_state_init = None, initialization_std: float = 0.5,
+        dim_nl: int, internal_state_init = None, initialization_std: float = 0.1,
         posdef_tol: float = 0.001, contraction_rate_lb: float = 1.0
     ):
         """
@@ -77,10 +78,21 @@ class ContractiveREN(nn.Module):
         # v signal
         self.D12_shape = (self.dim_nl, self.dim_in)
 
+        self.b_xi_shape = (1,self.dim_internal)
+        self.b_v_shape = (1,self.dim_nl)
+        self.b_y_shape = (1,1)
+
+
         # define trainble params
-        self.training_param_names = ['X', 'Y', 'B2', 'C2', 'D21', 'D12']
-        self._init_trainable_params(initialization_std)
-        self.register_buffer('D22', torch.zeros(self.D22_shape))
+        self.training_param_names = ['X', 'Y', 'B2', 'C2', 'D21', 'D12','D22','b_y']
+        self._load_trainable_params(initialization_std)
+    
+        """setattr(self, "b_xi", nn.Parameter((torch.zeros(*self.b_xi_shape) )))
+        setattr(self, "b_v", nn.Parameter((torch.zeros(*self.b_v_shape) )))
+        setattr(self, "b_y", nn.Parameter((torch.zeros(*self.b_y_shape) )))"""
+
+        print(self.b_y)
+
         # mask
         self.register_buffer('eye_mask_H', torch.eye(2 * self.dim_internal + self.dim_nl))
         self.register_buffer('eye_mask_w', torch.eye(self.dim_nl))
@@ -109,6 +121,7 @@ class ContractiveREN(nn.Module):
         self.D11 = -torch.tril(H22, diagonal=-1)
         self.C1 = -H21
 
+
     def forward(self, u_in):
         """
         Forward pass of REN.
@@ -135,19 +148,48 @@ class ContractiveREN(nn.Module):
         # compute next state using Eq. 18
         self.x = F.linear(
             F.linear(self.x, self.F) + F.linear(w, self.B1) + F.linear(u_in, self.B2),
-            self.E.inverse())
+            self.E.inverse()) 
 
+        #self.by = torch.zeros(1,2).to(device)
+        #self.by[:,0] = self.b_y
         # compute output
-        y_out = F.linear(self.x, self.C2) + F.linear(w, self.D21) + F.linear(u_in, self.D22)
+        y_out = F.linear(self.x, self.C2) + F.linear(w, self.D21) + F.linear(u_in, self.D22) + self.b_y
         return y_out
 
     # init trainable params
     def _init_trainable_params(self, initialization_std):
         for training_param_name in self.training_param_names:  # name of one of the training params, e.g., X
             # read the defined shapes of the selected training param, e.g., X_shape
+
             shape = getattr(self, training_param_name + '_shape')
+
+            if "b_" in training_param_name:
+                setattr(self, training_param_name, nn.Parameter((torch.randn(*shape) * initialization_std)))
+            else: 
             # define the selected param (e.g., self.X) as nn.Parameter
-            setattr(self, training_param_name, nn.Parameter((torch.randn(*shape) * initialization_std)))
+                setattr(self, training_param_name, nn.Parameter((torch.randn(*shape) * initialization_std)))
+
+
+
+    # init trainable params
+    def _load_trainable_params(self, initialization_std):
+        file_path = os.path.join(BASE_DIR, 'experiments', 'DHN', 'saved_results')
+        file_name = os.path.join(file_path, 'params')
+        filehandler = open(file_name, 'rb')
+        params = pickle.load(filehandler)
+        filehandler.close()
+        #params["b_y"] = torch.tensor([params["b_y"],2]).reshape(1,2)
+
+        for training_param_name in self.training_param_names:  # name of one of the training params, e.g., X
+            # read the defined shapes of the selected training param, e.g., X_shape
+
+            setattr(self, training_param_name, nn.Parameter(params[training_param_name]))
+
+            
+
+
+
+
 
     # setters and getters
     def get_parameter_shapes(self):

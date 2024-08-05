@@ -4,7 +4,7 @@ import numpy as np
 
 from config import device
 from .contractive_ren import ContractiveREN
-from assistive_functions import to_tensor, heaviside
+from assistive_functions import to_tensor, heaviside, saturate
 
 
 class PerfBoostController(nn.Module):
@@ -101,17 +101,18 @@ class PerfBoostController(nn.Module):
         u = self.c_ren.forward(w_)
 
         u1 = u[:,:,0:1]
-        u2 = u[:,:,1:]
+
+        u2 = u[:,:,1:]+2
+        #u2 = u[:,:,1:]
 
 
+        delta = heaviside(u1)
 
-        delta = heaviside(u1, m = 0.1)
-        #delta = torch.where(delta>0.5,1,0)
-        output = u2*delta
+
+        output = (u2)*delta
         self.u2 = u2
         self.u1 = u1
-
-        output = output*self.output_amplification
+        self.delta = delta
 
         # update internal states
         self.last_input, self.last_output = input_t, output

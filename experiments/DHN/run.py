@@ -14,7 +14,7 @@ from config import device
 from controllers import PerfBoostController
 from arg_parser import argument_parser, print_args
 from plants import DHNDataset, DHNSystem
-from assistive_functions import WrapLogger
+from assistive_functions import WrapLogger,heaviside
 from loss_functions import DHNLoss
 
 
@@ -32,7 +32,14 @@ logger = WrapLogger(logger)
 args = argument_parser()
 # msg = print_args(args)    # TODO
 # logger.info(msg)
-torch.manual_seed(args.random_seed)
+
+print(args.random_seed)
+#torch.manual_seed(args.random_seed)
+#torch.manual_seed(8)
+
+
+print(torch.seed())
+
 
 # ------------ 1. Dataset ------------
 disturbance = {
@@ -75,9 +82,9 @@ ctl = PerfBoostController(
 
 loss_fn = DHNLoss(
     R=args.alpha_u, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
-    alpha_xh = 3, alpha_uh=3,
-    alpha_xl=30,
-    alpha_ul = 15
+    alpha_xh = 1, alpha_uh=1,
+    alpha_xl=10,
+    alpha_ul = 10
 )
 
 
@@ -98,7 +105,7 @@ for epoch in range(1+args.epochs):
 
 
         # simulate over horizon steps
-        x_log, u_log, u2_log,u1_log = sys.rollout(controller=ctl, data=train_data_batch)
+        x_log, u_log, u2_log,u1_log,_ = sys.rollout(controller=ctl, data=train_data_batch)
 
         # loss of this rollout
         loss, loss_x, loss_u = loss_fn.forward(x_log, u_log, u2_log)
@@ -115,17 +122,22 @@ for epoch in range(1+args.epochs):
 
     # print info
     if epoch%args.log_epoch == 0:
-        msg = 'Epoch: %i --- train loss: %.2f --- Loss xl : %.2f ---  loss u min: %.2f  ---  loss u low: %.2f'% (epoch, loss, loss_x,loss_u,loss_ul)
+        msg = 'Epoch: %i --- train loss: %.2f --- Loss xl : %.2f ---  loss u min: %.2f'% (epoch, loss, loss_x,loss_u)
         #msg +='--- Loss xh : %.2f ---  loss ul: %.2f---  loss uh: %.2f'% (loss_xh, loss_ul, loss_uh)
         if args.return_best:
             # rollout the current controller on the valid data
             with torch.no_grad():
-                x_log_valid, u_log_valid,u2_log_valid,u1_log_valid = sys.rollout(
+                x_log_valid, u_log_valid,u2_log_valid,u1_log_valid,_ = sys.rollout(
                     controller=ctl, data=valid_data
                 )
+
                 # loss of the valid data
                 loss_valid, loss_x_v, loss_u_v = loss_fn.forward(x_log_valid, u_log_valid,u2_log_valid)
-            msg += ' ---||--- validation loss: %.2f  --- Loss x v: %.2f ---  loss u v: %.2f' % (loss_valid,loss_x_v,loss_u_v)
+
+                loss_ul_v = loss_fn.alpha_ul*torch.sum(loss_fn.f_lower_bound_u(u2_log),0)/x_log.shape[0]
+                loss_uh_v = loss_fn.alpha_uh*torch.sum(loss_fn.f_upper_bound_u(u2_log),0)/x_log.shape[0]
+
+            msg += ' ---||--- validation loss: %.2f  --- Loss x low: %.2f ---  loss u min: %.2f ---  loss u low: %.2f---  loss u high: %.2f' % (loss_valid,loss_x_v,loss_u_v,loss_ul_v,loss_uh_v)
             # compare with the best valid loss
             if loss_valid.item()<best_valid_loss:
                 best_valid_loss = loss_valid.item()
@@ -142,21 +154,20 @@ if args.return_best:
 
 
 with torch.no_grad():
-    x_log_test, u_log_test,u2_log_test,u1_log_test = sys.rollout(
-        controller=ctl, data=valid_data
+    x_log_test, u_log_test,u2_log_test,u1_log_test,delta = sys.rollout(
+        controller=ctl, data=test_data
     )
-
-
-delta = (u1_log_test >= 0).to(u1_log_test.dtype)
-
 
 
 
 lower_bound_losses = loss_fn.f_lower_bound_x(x_batch=x_log_test,s = False).cpu()
-lower_bound_u = loss_fn.f_lower_bound_u(u_batch=u2_log_test,s = False).cpu()
+lower_bound_u = loss_fn.f_lower_bound_u(u_batch=u2_log_test+2,s = False).cpu()
 
 x_log_test = x_log_test.cpu()
 u_log_test = u_log_test.cpu()
+u2_log_test = u2_log_test.cpu()
+delta = delta.cpu()
+
 
 print("U1")
 print(u1_log_test[1,:,:])
@@ -168,47 +179,62 @@ print(u2_log_test[1,:,:])
 print("Delta")
 print(delta[1,:,:])
 plt.figure()
-for i in range(valid_data.shape[0]): 
-    if i % 3 == 1: 
-        plt.plot(range(test_data.shape[1]),lower_bound_losses[i])
-        plt.title("Loss X profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.ylabel("Loss X")
+for i in range(test_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),lower_bound_losses[i])
+    plt.title("Loss X profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Loss X")
 plt.savefig("saved_results/lower_bound_loss.png")
 
 
 
 plt.figure()
-for i in range(valid_data.shape[0]): 
-    if i % 3 == 0: 
-        plt.plot(range(test_data.shape[1]),lower_bound_u[i])
-        plt.title("Loss  U profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.ylabel("Loss U")
+for i in range(test_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),lower_bound_u[i])
+    plt.title("Loss  U profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Loss U")
 plt.savefig("saved_results/lower_bound_u.png")
 
 
 
 plt.figure()
-for i in range(valid_data.shape[0]): 
-    if i % 3 == 0: 
-        plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
-        plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
-        plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
-        plt.title("X profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.ylabel("Temperature (°C)")
+for i in range(test_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),x_log_test[i]+25)
+    plt.plot(range(test_data.shape[1]),[40]*(test_data.shape[1]), "--", c = "grey")
+    plt.plot(range(test_data.shape[1]),[80]*(test_data.shape[1]), "--",c = "grey" )
+    plt.title("X profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Temperature (°C)")
 plt.savefig("saved_results/x_log.png")
 
 plt.figure()
-for i in range(valid_data.shape[0]): 
-    if i % 3 == 0: 
-        plt.plot(range(test_data.shape[1]),u_log_test[i])
-        plt.plot(range(test_data.shape[1]),[2]*(test_data.shape[1]), "--", c = "grey")
-        plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
-        plt.title("U profile over the horizon")
-        plt.xlabel("Time (h)")
-        plt.ylabel("Energy (MJ)")
+for i in range(test_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),u2_log_test[i])
+    plt.plot(range(test_data.shape[1]),[2]*(test_data.shape[1]), "--", c = "grey")
+    plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
+    plt.title("U2 profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Temperature (°C)")
+plt.savefig("saved_results/u2_log.png")
+
+plt.figure()
+for i in range(test_data.shape[0]): 
+    plt.plot(range(test_data.shape[1]),delta[i])
+    plt.title("Delta profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Temperature (°C)")
+plt.savefig("saved_results/delta_log.png")
+
+
+plt.figure()
+for i in range(test_data.shape[0]):     
+    plt.plot(range(test_data.shape[1]),u_log_test[i])
+    plt.plot(range(test_data.shape[1]),[2]*(test_data.shape[1]), "--", c = "grey")
+    plt.plot(range(test_data.shape[1]),[4]*(test_data.shape[1]), "--",c = "grey" )
+    plt.title("U profile over the horizon")
+    plt.xlabel("Time (h)")
+    plt.ylabel("Energy (MJ)")
 plt.savefig("saved_results/u_loss.png")
 
 plt.show()

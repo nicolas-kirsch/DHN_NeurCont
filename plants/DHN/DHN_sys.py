@@ -76,6 +76,7 @@ class DHNSystem(torch.nn.Module):
         
         u_2 = controller.u2
         u_1 = controller.u1
+        d = controller.delta
         for t in range(1, data.shape[1]):
             xs = torch.cat(
                 (
@@ -98,6 +99,11 @@ class DHNSystem(torch.nn.Module):
                 (u_1, controller.u1),
                 1
             )
+
+            d = torch.cat(
+                (d, controller.delta),
+                1
+            )
         controller.reset()
         
-        return xs, us, u_2, u_1
+        return xs, us, u_2, u_1,d

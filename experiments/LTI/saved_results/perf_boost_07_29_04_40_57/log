@@ -1,0 +1,10 @@
+2024-07-29 04:40:58,178 
+------------ Begin training ------------
+2024-07-29 04:40:58,844 Epoch: 0 --- train loss: 5.79 --- Loss xl : 0.00 ---  loss u min: 1.45 ---||--- validation loss: 4.37  --- Loss x low: 0.00 ---  loss u min: 1.42 ---  loss u low: 1.95---  loss u high: 0.00 (best so far) ---||--- time: 1 s
+2024-07-29 04:41:23,582 Epoch: 180 --- train loss: 1.80 --- Loss xl : 0.00 ---  loss u min: 0.53 ---||--- validation loss: 1.80  --- Loss x low: 0.00 ---  loss u min: 0.53 ---  loss u low: 1.18---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:41:48,290 Epoch: 360 --- train loss: 1.41 --- Loss xl : 0.00 ---  loss u min: 0.37 ---||--- validation loss: 1.41  --- Loss x low: 0.00 ---  loss u min: 0.37 ---  loss u low: 0.94---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:42:13,053 Epoch: 540 --- train loss: 1.33 --- Loss xl : 0.00 ---  loss u min: 0.32 ---||--- validation loss: 1.33  --- Loss x low: 0.00 ---  loss u min: 0.32 ---  loss u low: 0.92---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:42:37,796 Epoch: 720 --- train loss: 1.30 --- Loss xl : 0.00 ---  loss u min: 0.30 ---||--- validation loss: 1.30  --- Loss x low: 0.00 ---  loss u min: 0.30 ---  loss u low: 0.92---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:43:02,491 Epoch: 900 --- train loss: 1.28 --- Loss xl : 0.00 ---  loss u min: 0.29 ---||--- validation loss: 1.28  --- Loss x low: 0.00 ---  loss u min: 0.29 ---  loss u low: 0.91---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:43:27,179 Epoch: 1080 --- train loss: 1.26 --- Loss xl : 0.00 ---  loss u min: 0.29 ---||--- validation loss: 1.26  --- Loss x low: 0.00 ---  loss u min: 0.29 ---  loss u low: 0.90---  loss u high: 0.00 (best so far) ---||--- time: 25 s
+2024-07-29 04:43:51,971 Epoch: 1260 --- train loss: 1.25 --- Loss xl : 0.00 ---  loss u min: 0.29 ---||--- validation loss: 1.25  --- Loss x low: 0.00 ---  loss u min: 0.29 ---  loss u low: 0.89---  loss u high: 0.00 (best so far) ---||--- time: 25 s

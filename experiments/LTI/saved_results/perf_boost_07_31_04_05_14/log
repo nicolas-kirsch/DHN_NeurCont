@@ -1,0 +1,3 @@
+2024-07-31 04:05:14,986 
+------------ Begin training ------------
+2024-07-31 04:05:15,635 Epoch: 0 --- train loss: 224.66 --- Loss xl : 208.40 ---  loss u min: 0.38 ---||--- validation loss: 221.77  --- Loss x low: 205.59 ---  loss u min: 0.39 ---  loss u low: 15.88---  loss u high: 0.00 (best so far) ---||--- time: 1 s
