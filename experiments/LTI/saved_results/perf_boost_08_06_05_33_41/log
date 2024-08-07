@@ -1,0 +1,10 @@
+2024-08-06 05:33:42,091 
+------------ Begin training ------------
+2024-08-06 05:33:42,747 Epoch: 0 --- train loss: 4.89 --- Loss xl : 0.00 ---  loss u min: 2.65 ---||--- validation loss: 4.78  --- Loss x low: 0.00 ---  loss u min: 2.56 ---  loss u low: 2.14---  loss u high: 0.00 (best so far) ---||--- time: 1 s
+2024-08-06 05:34:09,286 Epoch: 200 --- train loss: 0.46 --- Loss xl : 0.00 ---  loss u min: 0.08 ---||--- validation loss: 0.46  --- Loss x low: 0.00 ---  loss u min: 0.08 ---  loss u low: 0.38---  loss u high: 0.00 (best so far) ---||--- time: 27 s
+2024-08-06 05:34:35,413 Epoch: 400 --- train loss: 0.29 --- Loss xl : 0.06 ---  loss u min: 0.04 ---||--- validation loss: 0.32  --- Loss x low: 0.09 ---  loss u min: 0.03 ---  loss u low: 0.19---  loss u high: 0.00 (best so far) ---||--- time: 26 s
+2024-08-06 05:35:00,930 Epoch: 600 --- train loss: 0.16 --- Loss xl : 0.00 ---  loss u min: 0.08 ---||--- validation loss: 0.16  --- Loss x low: 0.00 ---  loss u min: 0.08 ---  loss u low: 0.08---  loss u high: 0.00 (best so far) ---||--- time: 26 s
+2024-08-06 05:35:26,464 Epoch: 800 --- train loss: 0.12 --- Loss xl : 0.02 ---  loss u min: 0.06 ---||--- validation loss: 0.12  --- Loss x low: 0.02 ---  loss u min: 0.06 ---  loss u low: 0.04---  loss u high: 0.00 (best so far) ---||--- time: 26 s
+2024-08-06 05:35:52,232 Epoch: 1000 --- train loss: 0.10 --- Loss xl : 0.03 ---  loss u min: 0.05 ---||--- validation loss: 0.10  --- Loss x low: 0.02 ---  loss u min: 0.05 ---  loss u low: 0.02---  loss u high: 0.00 (best so far) ---||--- time: 26 s
+2024-08-06 05:36:17,932 Epoch: 1200 --- train loss: 0.08 --- Loss xl : 0.00 ---  loss u min: 0.08 ---||--- validation loss: 0.09  --- Loss x low: 0.00 ---  loss u min: 0.08 ---  loss u low: 0.00---  loss u high: 0.00 (best so far) ---||--- time: 26 s
+2024-08-06 05:36:43,911 Epoch: 1400 --- train loss: 0.10 --- Loss xl : 0.06 ---  loss u min: 0.04 ---||--- validation loss: 0.09  --- Loss x low: 0.04 ---  loss u min: 0.05 ---  loss u low: 0.00---  loss u high: 0.00 ---||--- time: 26 s

@@ -1,0 +1,13 @@
+2024-08-06 10:45:33,015 
+------------ Begin training ------------
+2024-08-06 10:45:36,944 Epoch: 0 --- train loss: 1.78 --- Loss xl : 0.00 ---  loss u min: 0.40 ---||--- validation loss: 1.73  --- Loss x low: 0.00 ---  loss u min: 0.39 ---  loss u low: 1.25---  loss u high: 0.00 (best so far) ---||--- time: 4 s
+2024-08-06 10:45:52,810 Epoch: 120 --- train loss: 0.13 --- Loss xl : 0.00 ---  loss u min: 0.04 ---||--- validation loss: 0.13  --- Loss x low: 0.00 ---  loss u min: 0.04 ---  loss u low: 0.08---  loss u high: 0.00 (best so far) ---||--- time: 16 s
+2024-08-06 10:46:08,629 Epoch: 240 --- train loss: 0.04 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.04  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.03---  loss u high: 0.00 (best so far) ---||--- time: 16 s
+2024-08-06 10:46:24,311 Epoch: 360 --- train loss: 0.03 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.03  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.01---  loss u high: 0.00 (best so far) ---||--- time: 16 s
+2024-08-06 10:46:39,916 Epoch: 480 --- train loss: 0.02 --- Loss xl : 0.01 ---  loss u min: 0.01 ---||--- validation loss: 0.03  --- Loss x low: 0.02 ---  loss u min: 0.01 ---  loss u low: 0.00---  loss u high: 0.00 ---||--- time: 16 s
+2024-08-06 10:46:55,764 Epoch: 600 --- train loss: 0.01 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.01  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.00---  loss u high: 0.00 (best so far) ---||--- time: 16 s
+2024-08-06 10:47:11,553 Epoch: 720 --- train loss: 0.01 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.01  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.00---  loss u high: 0.00 (best so far) ---||--- time: 16 s
+2024-08-06 10:47:26,862 Epoch: 840 --- train loss: 0.02 --- Loss xl : 0.00 ---  loss u min: 0.02 ---||--- validation loss: 0.02  --- Loss x low: 0.00 ---  loss u min: 0.02 ---  loss u low: 0.00---  loss u high: 0.00 ---||--- time: 15 s
+2024-08-06 10:47:42,141 Epoch: 960 --- train loss: 0.01 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.01  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.00---  loss u high: 0.00 ---||--- time: 15 s
+2024-08-06 10:47:57,612 Epoch: 1080 --- train loss: 0.03 --- Loss xl : 0.00 ---  loss u min: 0.03 ---||--- validation loss: 0.03  --- Loss x low: 0.00 ---  loss u min: 0.03 ---  loss u low: 0.00---  loss u high: 0.00 ---||--- time: 15 s
+2024-08-06 10:48:13,331 Epoch: 1200 --- train loss: 0.01 --- Loss xl : 0.00 ---  loss u min: 0.01 ---||--- validation loss: 0.01  --- Loss x low: 0.00 ---  loss u min: 0.01 ---  loss u low: 0.00---  loss u high: 0.00 (best so far) ---||--- time: 16 s

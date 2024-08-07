@@ -29,7 +29,7 @@ class ContractiveREN(nn.Module):
 
     def __init__(
         self, dim_in: int, dim_out: int, dim_internal: int,
-        dim_nl: int, internal_state_init = None, initialization_std: float = 0.1,
+        dim_nl: int, initial_by: float = -0.03, internal_state_init = None, initialization_std: float = 0.1,
         posdef_tol: float = 0.001, contraction_rate_lb: float = 1.0
     ):
         """
@@ -50,6 +50,7 @@ class ContractiveREN(nn.Module):
         self.dim_out = dim_out
         self.dim_internal = dim_internal
         self.dim_nl = dim_nl
+        self.initial_by = initial_by
 
         # set functionalities
         self.contraction_rate_lb = contraction_rate_lb
@@ -91,7 +92,6 @@ class ContractiveREN(nn.Module):
         setattr(self, "b_v", nn.Parameter((torch.zeros(*self.b_v_shape) )))
         setattr(self, "b_y", nn.Parameter((torch.zeros(*self.b_y_shape) )))"""
 
-        print(self.b_y)
 
         # mask
         self.register_buffer('eye_mask_H', torch.eye(2 * self.dim_internal + self.dim_nl))
@@ -153,7 +153,9 @@ class ContractiveREN(nn.Module):
         #self.by = torch.zeros(1,2).to(device)
         #self.by[:,0] = self.b_y
         # compute output
-        y_out = F.linear(self.x, self.C2) + F.linear(w, self.D21) + F.linear(u_in, self.D22) + self.b_y
+        y_out = F.linear(self.x, self.C2) + F.linear(w, self.D21) + F.linear(u_in, self.D22)
+
+        y_out[:,:,0] = y_out[:,:,0] + self.b_y
         return y_out
 
     # init trainable params
@@ -178,6 +180,8 @@ class ContractiveREN(nn.Module):
         filehandler = open(file_name, 'rb')
         params = pickle.load(filehandler)
         filehandler.close()
+        params["b_y"][0,0] = self.initial_by
+        print(params["b_y"])
         #params["b_y"] = torch.tensor([params["b_y"],2]).reshape(1,2)
 
         for training_param_name in self.training_param_names:  # name of one of the training params, e.g., X

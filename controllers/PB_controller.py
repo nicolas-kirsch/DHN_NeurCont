@@ -20,7 +20,7 @@ class PerfBoostController(nn.Module):
     def __init__(
         self, noiseless_forward, input_init: torch.Tensor, output_init: torch.Tensor,
         # acyclic REN properties
-        dim_internal: int, dim_nl: int,
+        dim_internal: int, dim_nl: int, initial_by:float = -0.03,
         initialization_std: float = 0.5,
         posdef_tol: float = 0.001, contraction_rate_lb: float = 1.0,
         ren_internal_state_init=None,
@@ -57,7 +57,7 @@ class PerfBoostController(nn.Module):
         # define the REN
         self.c_ren = ContractiveREN(
             dim_in=self.dim_in, dim_out=self.dim_out, dim_internal=dim_internal,
-            dim_nl=dim_nl, initialization_std=initialization_std,
+            dim_nl=dim_nl, initialization_std=initialization_std,initial_by=initial_by,
             internal_state_init=ren_internal_state_init,
             posdef_tol=posdef_tol, contraction_rate_lb=contraction_rate_lb
         ).to(device)
@@ -104,6 +104,7 @@ class PerfBoostController(nn.Module):
 
         u2 = u[:,:,1:]+2
         #u2 = u[:,:,1:]
+
 
 
         delta = heaviside(u1)
