@@ -83,8 +83,8 @@ ctl = PerfBoostController(
 loss_fn = DHNLoss(
     R=args.alpha_u, u_min=dataset.umin, u_max=dataset.umax, x_min=dataset.xmin,x_max=dataset.xmax,
     alpha_xh = 1, alpha_uh=1,
-    alpha_xl=10,
-    alpha_ul = 10
+    alpha_xl=7,
+    alpha_ul = 7
 )
 
 
@@ -127,9 +127,46 @@ for epoch in range(1+args.epochs):
         if args.return_best:
             # rollout the current controller on the valid data
             with torch.no_grad():
-                x_log_valid, u_log_valid,u2_log_valid,u1_log_valid,_ = sys.rollout(
+                x_log_valid, u_log_valid,u2_log_valid,u1_log_valid,dv = sys.rollout(
                     controller=ctl, data=valid_data
                 )
+                if epoch == 0: 
+
+                    x_log_test = x_log_valid.cpu()
+                    u_log_test = u_log_valid.cpu()
+                    u2_log_test = u2_log_valid.cpu()
+                    delta = dv.cpu()
+
+                    print("first")
+                    plt.figure()
+                    for i in range(valid_data.shape[0]): 
+                        plt.plot(range(valid_data.shape[1]),u2_log_test[i])
+                        plt.plot(range(valid_data.shape[1]),[2]*(valid_data.shape[1]), "--", c = "grey")
+                        plt.plot(range(valid_data.shape[1]),[4]*(valid_data.shape[1]), "--",c = "grey" )
+                        plt.title("U2 profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Temperature (°C)")
+                    plt.savefig("saved_results/u2_log_0.png")
+
+                    plt.figure()
+                    for i in range(valid_data.shape[0]): 
+                        plt.plot(range(valid_data.shape[1]),delta[i])
+                        plt.title("Delta profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Temperature (°C)")
+                    plt.savefig("saved_results/delta_log_0.png")
+
+
+                    plt.figure()
+                    for i in range(valid_data.shape[0]):     
+                        plt.plot(range(valid_data.shape[1]),u_log_test[i])
+                        plt.plot(range(valid_data.shape[1]),[2]*(valid_data.shape[1]), "--", c = "grey")
+                        plt.plot(range(valid_data.shape[1]),[4]*(valid_data.shape[1]), "--",c = "grey" )
+                        plt.title("U profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Energy (MJ)")
+                    plt.savefig("saved_results/u_profile_0.png")
+
 
                 # loss of the valid data
                 loss_valid, loss_x_v, loss_u_v = loss_fn.forward(x_log_valid, u_log_valid,u2_log_valid)
@@ -235,6 +272,8 @@ for i in range(test_data.shape[0]):
     plt.title("U profile over the horizon")
     plt.xlabel("Time (h)")
     plt.ylabel("Energy (MJ)")
-plt.savefig("saved_results/u_loss.png")
+plt.savefig("saved_results/u_profile.png")
 
+
+print(ctl.c_ren.b_y)
 plt.show()
