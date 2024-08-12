@@ -65,7 +65,7 @@ sys = DHNSystem(
     mass=200,cop = 2
 ).to(device)
 
-bys = [x / 100.0 for x in range(-10, 10, 1)]
+bys = [x / 100.0 for x in range(-10, 0, 1)]
 val_loss_by = []
 final_by = []
 for by in bys:
@@ -129,15 +129,58 @@ for by in bys:
             if args.return_best:
                 # rollout the current controller on the valid data
                 with torch.no_grad():
-                    x_log_valid, u_log_valid,u2_log_valid,u1_log_valid,_ = sys.rollout(
+                    x_log_valid, u_log_valid,u2_log_valid,u1_log_valid,dv = sys.rollout(
                         controller=ctl, data=valid_data
                     )
 
-                    # loss of the valid data
-                    loss_valid, loss_x_v, loss_u_v = loss_fn.forward(x_log_valid, u_log_valid,u2_log_valid)
+                if epoch == 0: 
 
-                    loss_ul_v = loss_fn.alpha_ul*torch.sum(loss_fn.f_lower_bound_u(u2_log),0)/x_log.shape[0]
-                    loss_uh_v = loss_fn.alpha_uh*torch.sum(loss_fn.f_upper_bound_u(u2_log),0)/x_log.shape[0]
+                    x_log_test = x_log_valid.cpu()
+                    u_log_test = u_log_valid.cpu()
+                    u2_log_test = u2_log_valid.cpu()
+                    delta = dv.cpu()
+
+
+
+                    print("first")
+                    plt.figure()
+                    for i in range(valid_data.shape[0]): 
+                        plt.plot(range(valid_data.shape[1]),u2_log_test[i])
+                        plt.plot(range(valid_data.shape[1]),[2]*(valid_data.shape[1]), "--", c = "grey")
+                        plt.plot(range(valid_data.shape[1]),[4]*(valid_data.shape[1]), "--",c = "grey" )
+                        plt.title("U2 profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Temperature (°C)")
+                    plt.savefig("saved_results/b_Y/u2_log_0_"+str(by)+".png")
+                    plt.close()
+
+                    plt.figure()
+                    for i in range(valid_data.shape[0]): 
+                        plt.plot(range(valid_data.shape[1]),delta[i])
+                        plt.title("Delta profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Temperature (°C)")
+                    plt.savefig("saved_results/b_Y/delta_log_0"+str(by)+".png")
+                    plt.close()
+
+
+                    plt.figure()
+                    for i in range(valid_data.shape[0]):     
+                        plt.plot(range(valid_data.shape[1]),u_log_test[i])
+                        plt.plot(range(valid_data.shape[1]),[2]*(valid_data.shape[1]), "--", c = "grey")
+                        plt.plot(range(valid_data.shape[1]),[4]*(valid_data.shape[1]), "--",c = "grey" )
+                        plt.title("U profile over the horizon")
+                        plt.xlabel("Time (h)")
+                        plt.ylabel("Energy (MJ)")
+                    plt.savefig("saved_results/b_Y/u_profile_0"+str(by)+".png")
+                    plt.close()
+
+
+                # loss of the valid data
+                loss_valid, loss_x_v, loss_u_v = loss_fn.forward(x_log_valid, u_log_valid,u2_log_valid)
+
+                loss_ul_v = loss_fn.alpha_ul*torch.sum(loss_fn.f_lower_bound_u(u2_log),0)/x_log.shape[0]
+                loss_uh_v = loss_fn.alpha_uh*torch.sum(loss_fn.f_upper_bound_u(u2_log),0)/x_log.shape[0]
 
                 msg += ' ---||--- validation loss: %.2f  --- Loss x low: %.2f ---  loss u min: %.2f ---  loss u low: %.2f---  loss u high: %.2f' % (loss_valid,loss_x_v,loss_u_v,loss_ul_v,loss_uh_v)
                 # compare with the best valid loss

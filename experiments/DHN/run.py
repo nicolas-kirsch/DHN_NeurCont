@@ -34,7 +34,7 @@ args = argument_parser()
 # logger.info(msg)
 
 print(args.random_seed)
-#torch.manual_seed(args.random_seed)
+torch.manual_seed(args.random_seed)
 #torch.manual_seed(8)
 
 
