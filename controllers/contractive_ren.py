@@ -29,7 +29,7 @@ class ContractiveREN(nn.Module):
 
     def __init__(
         self, dim_in: int, dim_out: int, dim_internal: int,
-        dim_nl: int, initial_by: float = -0.03, internal_state_init = None, initialization_std: float = 0.1,
+        dim_nl: int, HPAct, initial_by: float = -0.03, internal_state_init = None, initialization_std: float = 0.1,
         posdef_tol: float = 0.001, contraction_rate_lb: float = 1.0
     ):
         """
@@ -86,7 +86,7 @@ class ContractiveREN(nn.Module):
 
         # define trainble params
         self.training_param_names = ['X', 'Y', 'B2', 'C2', 'D21', 'D12','D22','b_y']
-        self._load_trainable_params(initialization_std)
+        self._init_trainable_params(initialization_std)
     
         """setattr(self, "b_xi", nn.Parameter((torch.zeros(*self.b_xi_shape) )))
         setattr(self, "b_v", nn.Parameter((torch.zeros(*self.b_v_shape) )))
@@ -96,6 +96,8 @@ class ContractiveREN(nn.Module):
         # mask
         self.register_buffer('eye_mask_H', torch.eye(2 * self.dim_internal + self.dim_nl))
         self.register_buffer('eye_mask_w', torch.eye(self.dim_nl))
+
+        self.hpact = HPAct
 
     def _update_model_param(self):
         """
@@ -153,9 +155,12 @@ class ContractiveREN(nn.Module):
         #self.by = torch.zeros(1,2).to(device)
         #self.by[:,0] = self.b_y
         # compute output
+
         y_out = F.linear(self.x, self.C2) + F.linear(w, self.D21) + F.linear(u_in, self.D22)
 
-        y_out[:,:,0] = y_out[:,:,0] + self.b_y
+        #y_out[:,:,0] = y_out[:,:,0] + self.b_y
+
+        #y_out = self.hpact(y_out)
         return y_out
 
     # init trainable params

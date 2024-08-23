@@ -38,7 +38,7 @@ class DHNLoss():
         print(self.R)
 
 
-    def forward(self, xs, us,u2):
+    def forward(self, xs, us):
         """
         Compute loss.
 
@@ -54,7 +54,7 @@ class DHNLoss():
         x_batch = xs.reshape(*xs.shape,1)
         u_batch = us.reshape(*us.shape, 1)
 
-        u2_batch = u2.reshape(*u2.shape, 1)
+        u2_batch = us.reshape(*us.shape, 1)
         # loss states = 1/T sum_{t=1}^T (x_t-xbar)^T Q (x_t-xbar)
         
         # loss control actions = 1/T sum_{t=1}^T u_t^T R u_t

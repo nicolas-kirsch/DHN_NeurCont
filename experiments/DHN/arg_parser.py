@@ -11,12 +11,12 @@ def argument_parser():
     # dataset
     parser.add_argument('--horizon', type=int, default=24, help='Time horizon for the computation. Default is 24.')
     parser.add_argument('--state-dim', type=int, default=1, help='Number of states of the LTI Plant. Default is 1.')
-    parser.add_argument('--num-rollouts', type=int, default=800, help='Number of rollouts in the training data. Default is 30.')
+    parser.add_argument('--num-rollouts', type=int, default=150, help='Number of rollouts in the training data. Default is 30.')
 
     # optimizer
-    parser.add_argument('--batch-size', type=int, default=800, help='Number of forward trajectories of the closed-loop system at each step. Default is 5.')
+    parser.add_argument('--batch-size', type=int, default=150, help='Number of forward trajectories of the closed-loop system at each step. Default is 5.')
     parser.add_argument('--epochs', type=int, default=5000, help='Total number of epochs for training. Default is 5000 if collision avoidance, else 100.')
-    parser.add_argument('--lr', type=float, default=1e-1, help='Learning rate. Default is 2e-3 if collision avoidance, else 5e-3.')
+    parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate. Default is 2e-3 if collision avoidance, else 5e-3.')
     parser.add_argument('--log-epoch', type=int, default=-1, help='Frequency of logging in epochs. Default is 0.1 * epochs.')
     parser.add_argument('--return-best', type=bool, default=True, help='Return the best model on the validation data among all logged iterations. The train data can be used instead of validation data. The Default is True.')
 

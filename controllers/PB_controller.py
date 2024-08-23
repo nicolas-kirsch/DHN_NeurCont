@@ -6,6 +6,102 @@ from config import device
 from .contractive_ren import ContractiveREN
 from assistive_functions import to_tensor, heaviside, saturate
 
+class HPActivation(nn.Module):
+    def __init__(self,umin,umax):
+        super(HPActivation, self).__init__()
+        self.umin = umin
+        self.umax = umax
+        self.k = 1
+        
+    def forward(self, x):
+        return self.umax*torch.sigmoid(self.k*(x-1/self.k*torch.log(self.umax/self.umin-1)))*(x > 0).to(device)
+        """f_1 = self.umax*torch.sigmoid(x-torch.log(self.umax/self.umin-1)).to(device)
+        f_2 = self.umax*torch.sigmoid(k*(x-1/k*torch.log(self.umax/self.umin-1))).to(device)
+        return torch.minimum(f_1,f_2)"""
+
+    def psi(self,x):
+        x = torch.where(x < 0, 
+            torch.zeros(x.shape).to(device),torch.exp(-1/x)).to(device)
+        return x
+        
+    def phi(self,x): 
+        phi = torch.where(x <= 0, 
+            torch.zeros(x.shape).to(device),
+                torch.where(x>=1,torch.full(x.shape,1).to(device),
+                    self.psi(x)/(self.psi(x)+ self.psi(1-x)))
+        ).to(device)
+        return phi
+
+            
+    def f(self,x):
+        return 0.001*x
+
+    def g(self,x): 
+        return self.umax*torch.sigmoid(self.k*(x-torch.log(self.umax/self.umin-1)))
+    def h(self,x,a=0,b=1): 
+        return (1-self.phi((x-a)/(b-a)))*self.f(x)+ self.phi((x-a)/(b-a))*self.g(x)
+
+
+    
+    
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.normal_(m.weight, mean = 0.5, std = 0.09)
+        nn.init.normal_(m.bias, mean = 0, std = 0.05)
+
+
+class NeuralNetwork(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.umin = torch.tensor(2).to(device)
+        self.umax = torch.tensor(4).to(device)
+        self.HP = HPActivation(self.umin,self.umax)
+        self.HPforward = self.HP.forward
+        self.mlp = nn.Sequential(
+            nn.Linear(1, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 1),
+        )
+        #self.mlp.apply(init_weights)
+
+
+    def forward(self, x):
+
+        out = self.mlp(x)
+        #return out
+        return self.umin + (self.umax-self.umin)*torch.sigmoid(out)
+
+class NeuralClassif(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        umin = torch.tensor(2).to(device)
+        umax = torch.tensor(4).to(device)
+        
+        self.HP = HPActivation(umin, umax)
+        
+        self.mlp = nn.Sequential(
+            nn.Linear(1, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 10),
+            nn.Sigmoid(),
+            nn.Linear(10, 1),
+            nn.Sigmoid()
+        )
+        #self.mlp.apply(init_weights)
+
+
+    def forward(self, x):
+
+        out = self.mlp(x)
+        #return out
+        return out
 
 class PerfBoostController(nn.Module):
     """
@@ -52,15 +148,25 @@ class PerfBoostController(nn.Module):
         # set dimensions
         self.dim_in = self.input_init.shape[-1]
         #self.dim_out = self.output_init.shape[-1]
-        self.dim_out = 2
+        self.dim_out = 1
+
+
+        umin = torch.tensor(2).to(device)
+        umax = torch.tensor(4).to(device)
+        self.HP = HPActivation(umin, umax)
 
         # define the REN
         self.c_ren = ContractiveREN(
             dim_in=self.dim_in, dim_out=self.dim_out, dim_internal=dim_internal,
-            dim_nl=dim_nl, initialization_std=initialization_std,initial_by=initial_by,
+            dim_nl=dim_nl, HPAct=self.HP, initialization_std=initialization_std,initial_by=initial_by,
             internal_state_init=ren_internal_state_init,
             posdef_tol=posdef_tol, contraction_rate_lb=contraction_rate_lb
         ).to(device)
+        
+        self.mlp = NeuralNetwork().to(device)
+        self.classif = NeuralClassif().to(device)
+        params = list(self.mlp.parameters())
+        print(len(params))
 
         # define the system dynamics without process noise
         self.noiseless_forward = noiseless_forward
@@ -98,29 +204,23 @@ class PerfBoostController(nn.Module):
         w_ = input_t - u_noiseless # shape = (self.batch_size, 1, self.dim_in)
 
         # apply REN
-        u = self.c_ren.forward(w_)
+        u_tilde = self.mlp.forward(w_)
 
-        u1 = u[:,:,0:1]
+        u_forward = self.HP.forward(u_tilde)
+        u_backwards = self.HP.h(u_tilde,a=0,b=1)
 
-        u2 = u[:,:,1:]+2
-        #u2 = u[:,:,1:]
+        """u = torch.tanh(u_tilde)
 
+        u = torch.where(u<0,0,2+(4-2)*u).to(device)"""
+        #u = torch.maximum(torch.zeros(u_ti.shape).to(device),2+(4-2)*u_ti.to(device))
 
-
-        delta = heaviside(u1)
-
-
-        output = (u2)*delta
-        self.u2 = u2
-        self.u1 = u1
-        self.delta = delta
 
         # update internal states
-        self.last_input, self.last_output = input_t, output
+        self.last_input, self.last_output = input_t, u_forward
         self.t += 1
 
 
-        return output
+        return u_forward, u_backwards
 
     # setters and getters
     def get_parameter_shapes(self):

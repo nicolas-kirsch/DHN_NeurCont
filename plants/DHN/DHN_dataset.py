@@ -63,7 +63,8 @@ class DHNDataset(CostumDataset):
         # Compute the moving average
         smoothed_heat_demand = -np.convolve(heat_demand, np.ones(window_size)/window_size, mode='same')*0.06
  
-        data_x0 = (40 + 40*torch.rand(n_data_total, n_states))-25
+        data_x0 = ((40 + 40*torch.rand(n_data_total, n_states))-25)
+        #data_x0 = ((torch.rand(n_data_total, n_states)))
 
         d = torch.zeros(n_data_total,self.horizon,n_w)  
 
@@ -76,6 +77,3 @@ class DHNDataset(CostumDataset):
         data = d
 
         return data
-
-
-

@@ -72,11 +72,7 @@ class DHNSystem(torch.nn.Module):
         controller.reset()
         xs = (data[:, 0:1, :]/(self.mass*self.cp))
         
-        us = controller.forward(xs[:, 0:1, :])
-        
-        u_2 = controller.u2
-        u_1 = controller.u1
-        d = controller.delta
+        us,u_back = controller.forward(xs[:, 0:1, :])
         for t in range(1, data.shape[1]):
             xs = torch.cat(
                 (
@@ -84,26 +80,17 @@ class DHNSystem(torch.nn.Module):
                     torch.matmul(self.A, xs[:, t-1:t, :]) + torch.matmul(self.B, us[:, t-1:t, :]) + data[:, t:t+1, :]/(self.mass*self.cp)),
                 1
             )
-
+            us_t,us_back_t = controller.forward(xs[:, t:t+1, :])
             us = torch.cat(
-                (us, controller.forward(xs[:, t:t+1, :])),
+                (us, us_t),
                 1
             )
 
-            u_2 = torch.cat(
-                (u_2, controller.u2),
+            u_back = torch.cat(
+                (u_back, us_back_t),
                 1
             )
 
-            u_1 = torch.cat(
-                (u_1, controller.u1),
-                1
-            )
-
-            d = torch.cat(
-                (d, controller.delta),
-                1
-            )
         controller.reset()
         
-        return xs, us, u_2, u_1,d
+        return xs, u_back, us

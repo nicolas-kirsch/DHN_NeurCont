@@ -1,0 +1,10 @@
+2024-08-15 06:22:44,794 
+------------ Begin training ------------
+2024-08-15 06:22:46,296 Epoch: 0 --- train loss: 97.72 --- Loss xl : 97.53 ---  loss u min: 0.00 ---||--- validation loss: 97.71  --- Loss x low: 97.53 ---  loss u min: 0.00 ---  loss u low: 0.18---  loss u high: 0.00 (best so far) ---||--- time: 2 s
+2024-08-15 06:22:57,534 Epoch: 80 --- train loss: 71.25 --- Loss xl : 70.92 ---  loss u min: 0.17 ---||--- validation loss: 71.25  --- Loss x low: 70.92 ---  loss u min: 0.17 ---  loss u low: 0.16---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:23:08,909 Epoch: 160 --- train loss: 70.95 --- Loss xl : 70.62 ---  loss u min: 0.17 ---||--- validation loss: 70.94  --- Loss x low: 70.62 ---  loss u min: 0.17 ---  loss u low: 0.15---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:23:20,201 Epoch: 240 --- train loss: 70.63 --- Loss xl : 70.30 ---  loss u min: 0.18 ---||--- validation loss: 70.62  --- Loss x low: 70.30 ---  loss u min: 0.18 ---  loss u low: 0.15---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:23:31,527 Epoch: 320 --- train loss: 70.28 --- Loss xl : 69.95 ---  loss u min: 0.18 ---||--- validation loss: 70.28  --- Loss x low: 69.95 ---  loss u min: 0.18 ---  loss u low: 0.15---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:23:42,793 Epoch: 400 --- train loss: 69.90 --- Loss xl : 69.56 ---  loss u min: 0.19 ---||--- validation loss: 69.89  --- Loss x low: 69.55 ---  loss u min: 0.19 ---  loss u low: 0.15---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:23:54,008 Epoch: 480 --- train loss: 69.44 --- Loss xl : 69.09 ---  loss u min: 0.19 ---||--- validation loss: 69.43  --- Loss x low: 69.09 ---  loss u min: 0.19 ---  loss u low: 0.16---  loss u high: 0.00 (best so far) ---||--- time: 11 s
+2024-08-15 06:24:05,276 Epoch: 560 --- train loss: 68.89 --- Loss xl : 68.52 ---  loss u min: 0.20 ---||--- validation loss: 68.88  --- Loss x low: 68.52 ---  loss u min: 0.20 ---  loss u low: 0.17---  loss u high: 0.00 (best so far) ---||--- time: 11 s
